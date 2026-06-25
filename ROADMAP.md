@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-规划和项目基础建设。
+真实数据版建设。
 
 ## 已完成
 
@@ -19,10 +19,14 @@
 - 搭建 `apps/api` FastAPI 后端骨架。
 - 实现首页 UI 骨架，包含搜索入口、榜单和 AI 精选专题栏。
 - 实现后端 SQLAlchemy 模型、示例数据和基础查询接口。
+- 实现 GitHub Trending 抓取，支持 `daily`、`weekly`、`monthly` 和可选语言过滤。
+- 实现 Trending HTML 解析、仓库 upsert、抓取运行记录和榜单快照写入。
+- 添加手动抓取命令 `npm run ingest:trending -- --period daily --limit 20`。
+- 将首页视觉从营销页调整为开源发现工作台布局，包含侧边导航、榜单工作区和右侧洞察面板。
 
 ## 进行中
 
-- 实现 GitHub Trending 抓取。
+- 将前端示例数据切换为后端 API 数据。
 
 ## 功能开发计划
 
@@ -75,12 +79,11 @@
 ## 下一步
 
 - 添加热门数据定时更新能力。
-- 将前端示例数据切换为后端 API 数据。
+- 添加手动触发抓取的后端接口。
 
 ## 阻塞
 
 - AI 精选方案未确认。
-- GitHub Trending 抓取策略未确认。
 - SQLite 迁移到 PostgreSQL 的时机未确认。
 
 ## 已知风险
@@ -99,3 +102,8 @@
 - 2026-06-25：已通过 `npm run lint:web`、`npm run build:web`、`python3 -m compileall apps/api/app`。
 - 2026-06-25：已通过本地接口检查：`GET /health`、`GET /api/repositories/trending`、`GET /api/repositories/search`、`GET /api/featured`。
 - 2026-06-25：已启动前端预览服务并确认 `http://127.0.0.1:3000` 返回 200。
+- 2026-06-25：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`，共 8 个测试。
+- 2026-06-25：已通过 `apps/api/.venv/bin/python -m compileall apps/api/app`。
+- 2026-06-25：已通过真实 GitHub Trending 抓取验证：`python -m app.github_trending --period daily --limit 3` 写入 1 次成功 run 和 3 条快照。
+- 2026-06-25：已通过 `npm run lint:web` 和 `npm run build:web` 验证首页工作台视觉改造。
+- 2026-06-25：已重启前端开发服务并确认 `http://127.0.0.1:3000` 返回 200。

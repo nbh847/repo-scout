@@ -1,0 +1,1 @@
+"""Repo Scout API package."""

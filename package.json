@@ -1,0 +1,20 @@
+{
+  "name": "repo-scout",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace apps/web run dev",
+    "build:web": "npm --workspace apps/web run build",
+    "lint:web": "npm --workspace apps/web run lint",
+    "dev:api": "uvicorn app.main:app --reload --app-dir apps/api",
+    "seed:api": "python -m app.seed"
+  },
+  "overrides": {
+    "postcss": "^8.5.10",
+    "next@15.5.19": {
+      "postcss": "^8.5.10"
+    }
+  }
+}

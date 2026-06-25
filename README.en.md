@@ -33,3 +33,31 @@ This project is in the planning stage. See [ROADMAP.md](./ROADMAP.md) for the cu
 
 - [MVP Scope](./docs/mvp.md)
 - [Architecture Plan](./docs/architecture.md)
+- [Data Model Design](./docs/data-model.md)
+
+## Local Development
+
+The project uses a lightweight monorepo structure:
+
+- `apps/web`: Next.js frontend.
+- `apps/api`: FastAPI backend.
+
+Frontend:
+
+```bash
+npm install
+npm run dev:web
+```
+
+Backend:
+
+```bash
+cd apps/api
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+cd ../..
+npm run dev:api
+```
+
+The backend uses a local SQLite database by default. The database file is stored in `data/`, which is ignored by git.

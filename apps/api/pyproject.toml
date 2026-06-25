@@ -1,0 +1,14 @@
+[project]
+name = "repo-scout-api"
+version = "0.1.0"
+description = "FastAPI backend for Repo Scout."
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.0",
+  "sqlalchemy>=2.0.0",
+  "alembic>=1.13.0"
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

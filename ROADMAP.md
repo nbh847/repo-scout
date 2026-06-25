@@ -14,10 +14,15 @@
 - 起草技术架构计划。
 - 将公开文档调整为中文为主，并新增英文 README。
 - 确认 MVP 技术栈：Next.js、TypeScript、Tailwind CSS、Python、FastAPI、SQLite、SQLAlchemy、Alembic。
+- 定义仓库、榜单快照、抓取记录和 AI 精选集合的数据表结构。
+- 搭建 `apps/web` Next.js 前端骨架。
+- 搭建 `apps/api` FastAPI 后端骨架。
+- 实现首页 UI 骨架，包含搜索入口、榜单和 AI 精选专题栏。
+- 实现后端 SQLAlchemy 模型、示例数据和基础查询接口。
 
 ## 进行中
 
-- 定义仓库、榜单快照、抓取记录和 AI 精选集合的数据表结构。
+- 实现 GitHub Trending 抓取。
 
 ## 功能开发计划
 
@@ -69,15 +74,18 @@
 
 ## 下一步
 
-- 构建第一版 UI，包含榜单、搜索和精选专题栏。
-- 实现 GitHub Trending 抓取。
 - 添加热门数据定时更新能力。
+- 将前端示例数据切换为后端 API 数据。
 
 ## 阻塞
 
 - AI 精选方案未确认。
 - GitHub Trending 抓取策略未确认。
 - SQLite 迁移到 PostgreSQL 的时机未确认。
+
+## 已知风险
+
+- `npm audit --omit=dev` 仍报告 Next.js 内部固定依赖 `postcss@8.4.31` 的 moderate 漏洞；项目已将直接依赖 `postcss` 升级到安全版本，并尝试使用 npm `overrides`，但 Next 嵌套依赖未被覆盖。后续需要跟进 Next.js 上游修复或更换到已修复版本。
 
 ## 最近验证
 
@@ -86,3 +94,8 @@
 - 2026-06-25：已验证中文主文档和英文 README 内容。
 - 2026-06-25：已将 4 阶段功能开发计划写入路线图。
 - 2026-06-25：已将技术栈调整为 Next.js、FastAPI、SQLite、SQLAlchemy 和 Alembic。
+- 2026-06-25：已验证数据模型设计文档内容。
+- 2026-06-25：已完成前端首页和后端查询接口骨架。
+- 2026-06-25：已通过 `npm run lint:web`、`npm run build:web`、`python3 -m compileall apps/api/app`。
+- 2026-06-25：已通过本地接口检查：`GET /health`、`GET /api/repositories/trending`、`GET /api/repositories/search`、`GET /api/featured`。
+- 2026-06-25：已启动前端预览服务并确认 `http://127.0.0.1:3000` 返回 200。

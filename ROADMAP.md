@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-AI 精选版建设。
+产品增强版建设。
 
 ## 已完成
 
@@ -51,10 +51,11 @@ AI 精选版建设。
 - 跟进 Next.js 嵌套 `postcss` 漏洞风险，新增 `docs/dependency-risks.md` 记录 audit 结果、上游状态和当前不采用 `npm audit fix --force` 的原因。
 - 增加 MVP 发布就绪摘要 `docs/release-readiness.md`，明确当前适合本地演示/单机自用验收，不适合直接公开生产发布。
 - 修复前端 `typecheck` 单独运行依赖 `.next/types` 已存在的问题，改为先执行 `next typegen` 再运行 `tsc --noEmit`。
+- 已按功能边界提交 MVP 真实数据闭环、AI 精选、前端详情页、本地演示脚本和发布准备文档。
 
 ## 进行中
 
-- 提交/打包准备：整理当前大批未提交改动的提交边界。
+- 产品增强版建设：补齐榜单语言和周期筛选。
 
 ## 功能开发计划
 
@@ -107,8 +108,9 @@ AI 精选版建设。
 
 ## 下一步
 
-- 整理当前大批未提交改动的提交边界。
-- 按功能边界提交已验证改动。
+- 支持首页按 GitHub Trending 周期筛选 `daily`、`weekly`、`monthly`。
+- 支持首页按语言筛选 Trending 数据。
+- 验证筛选参数贯穿前端、API 和本地演示入口。
 
 ## 阻塞
 
@@ -162,3 +164,4 @@ AI 精选版建设。
 - 2026-06-26：已通过 `npm audit --omit=dev`、`npm ls postcss`、`npm view next version`、`npm view next@15 version`、`npm view next@16 version` 和 `npm view next@16.2.9 engines peerDependencies dependencies.postcss version` 跟进 Next.js 内部 `postcss@8.4.31` 风险；确认当前稳定 Next `16.2.9` 仍未修复，已记录到 `docs/dependency-risks.md`。
 - 2026-06-26：已新增 `docs/release-readiness.md`，整理 MVP 当前发布就绪判断、已处理事项、剩余风险和交付前验证基线。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`scripts/test-mvp-release-checklist.sh`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck`、`npm run build:web` 和 `git diff --check` 做提交前完整验证；后端测试仍有 SQLite `ResourceWarning`，测试结果为通过。
+- 2026-06-26：已按功能边界提交 `dc9b4ae`、`de98763`、`ed6eec0` 三个提交，覆盖后端抓取/精选、前端真实数据/详情页、文档脚本/发布准备。

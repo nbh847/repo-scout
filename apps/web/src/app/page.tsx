@@ -1,322 +1,385 @@
 import {
-  ArrowUpRight,
-  BookOpen,
-  Bot,
-  Code2,
+  ArrowRight,
   ExternalLink,
-  Gauge,
-  GitFork,
-  Layers3,
+  Flame,
   Radar,
   Search,
+  SlidersHorizontal,
   Sparkles,
   Star,
-  Terminal,
-  TrendingUp,
+  Timer,
 } from "lucide-react";
+import Link from "next/link";
+import {
+  type ApiRepository,
+  buildRepositoryHref,
+  buildMetrics,
+  buildRepositoryViewModel,
+  type RepositoryViewModel,
+} from "./repository-view-models";
 
-const trendingRepositories = [
-  {
-    rank: 1,
-    fullName: "langchain-ai/langchain",
-    description: "构建 RAG、Agent 和上下文感知 LLM 应用的基础框架。",
-    language: "Python",
-    stars: "104k",
-    forks: "16k",
-    gained: "+640",
-    tags: ["LLM", "Agent", "RAG"],
-    fit: "Concepts",
-  },
-  {
-    rank: 2,
-    fullName: "open-webui/open-webui",
-    description: "面向本地模型和托管模型的自托管 AI 聊天界面。",
-    language: "TypeScript",
-    stars: "82k",
-    forks: "9.8k",
-    gained: "+580",
-    tags: ["UI", "Chat", "Self-hosted"],
-    fit: "Product",
-  },
-  {
-    rank: 3,
-    fullName: "ollama/ollama",
-    description: "在本地运行大语言模型的开发者工具。",
-    language: "Go",
-    stars: "145k",
-    forks: "12k",
-    gained: "+520",
-    tags: ["Local LLM", "Models", "CLI"],
-    fit: "Runtime",
-  },
+export const dynamic = "force-dynamic";
+
+type SearchParams = {
+  q?: string | string[];
+};
+
+type HomeProps = {
+  searchParams?: Promise<SearchParams>;
+};
+
+type FeaturedCollection = {
+  title: string;
+  repositories: Array<
+    ApiRepository & {
+      reason: string;
+      beginner_score: number;
+      learning_value_score: number;
+    }
+  >;
+};
+
+type FeaturedProject = {
+  title: string;
+  repo: string;
+  reason: string;
+  score: string;
+};
+
+const apiBaseUrl = process.env.REPO_SCOUT_API_URL ?? "http://127.0.0.1:8000";
+
+const intentFilters = ["全部项目", "好玩", "好用"];
+const languageFilters = ["全部", "Python", "TypeScript", "Go", "Swift", "LLM Tools"];
+const scoreRows = [
+  { label: "热度", color: "bg-orange-400", value: 8.8 },
+  { label: "增长", color: "bg-cyan", value: 8.4 },
+  { label: "学习", color: "bg-emerald-400", value: 8.1 },
+  { label: "综合", color: "bg-violet-400", value: 8.5 },
 ];
 
-const featuredProjects = [
-  {
-    title: "适合初学者的 AI 项目",
-    repo: "open-webui/open-webui",
-    reason: "界面完整、部署路径清晰，适合理解 AI 产品如何组织模型、会话和设置。",
-    score: "4.6",
-  },
-  {
-    title: "值得关注的 Agent 框架",
-    repo: "langchain-ai/langchain",
-    reason: "生态成熟，学习材料丰富，适合建立 RAG 和 Agent 的基础概念。",
-    score: "4.8",
-  },
-];
+async function fetchApi<T>(path: string): Promise<{ data: T | null; error: string | null }> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2000);
 
-const navigationItems = [
-  { label: "Trending", icon: TrendingUp, active: true },
-  { label: "AI Picks", icon: Sparkles, active: false },
-  { label: "Languages", icon: Code2, active: false },
-  { label: "Collections", icon: Layers3, active: false },
-];
+  try {
+    const response = await fetch(`${apiBaseUrl}${path}`, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      return { data: null, error: `API returned ${response.status}` };
+    }
+    return { data: (await response.json()) as T, error: null };
+  } catch {
+    return { data: null, error: "API is not reachable" };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
-const filters = ["All", "Python", "TypeScript", "Go", "AI Agent", "LLM Tools"];
+function readSearchQuery(searchParams?: SearchParams): string {
+  const value = searchParams?.q;
+  if (Array.isArray(value)) {
+    return value[0]?.trim() ?? "";
+  }
+  return value?.trim() ?? "";
+}
 
-const metrics = [
-  { label: "Tracked repos", value: "128", icon: Radar },
-  { label: "Beginner fit", value: "24", icon: BookOpen },
-];
+function buildRepositoryPath(query: string): string {
+  if (!query) {
+    return "/api/repositories/trending?limit=20";
+  }
+  return `/api/repositories/search?q=${encodeURIComponent(query)}&limit=20`;
+}
 
-export default function Home() {
+function buildFeaturedProjects(collections: FeaturedCollection[] | null): FeaturedProject[] {
+  if (!collections) {
+    return [];
+  }
+
+  return collections.flatMap((collection) =>
+    collection.repositories.slice(0, 3).map((repository) => ({
+      title: collection.title,
+      repo: repository.full_name,
+      reason: repository.reason,
+      score: ((repository.beginner_score + repository.learning_value_score) / 2).toFixed(1),
+    })),
+  );
+}
+
+function metricValue(metrics: ReturnType<typeof buildMetrics>, label: string): string {
+  return metrics.find((metric) => metric.label === label)?.value ?? "0";
+}
+
+function scoreFor(repository: RepositoryViewModel, offset: number): number {
+  const seed = repository.rank + repository.fullName.length + offset;
+  return Number((7.2 + (seed % 18) / 10).toFixed(1));
+}
+
+function scoreWidth(value: number): string {
+  return `${Math.min(96, Math.max(28, value * 10))}%`;
+}
+
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+  const query = readSearchQuery(params);
+  const [repositoryResult, featuredResult] = await Promise.all([
+    fetchApi<ApiRepository[]>(buildRepositoryPath(query)),
+    fetchApi<FeaturedCollection[]>("/api/featured"),
+  ]);
+  const repositories: RepositoryViewModel[] = (repositoryResult.data ?? []).map((repository, index) =>
+    buildRepositoryViewModel(repository, index),
+  );
+  const featuredProjects = buildFeaturedProjects(featuredResult.data);
+  const metrics = buildMetrics(repositories);
+  const dataError = repositoryResult.error ?? featuredResult.error;
+  const primaryRepositories = repositories.slice(0, 6);
+  const starRepositories = repositories.slice(0, 4);
+  const sidebarProjects =
+    featuredProjects.length > 0
+      ? featuredProjects
+      : starRepositories.map((repository) => ({
+          title: "GitHub Trending",
+          repo: repository.fullName,
+          reason: repository.description,
+          score: repository.gained,
+        }));
+
   return (
-    <main className="min-h-screen overflow-hidden bg-canvas text-ink">
-      <div className="pointer-events-none fixed inset-0 bg-grid opacity-40" />
-      <div className="pointer-events-none fixed inset-0 bg-scanline opacity-20" />
+    <main className="min-h-screen overflow-hidden bg-[#111325] text-ink">
+      <div className="pointer-events-none fixed inset-0 bg-grid opacity-20" />
+      <div className="pointer-events-none fixed inset-0 bg-scanline opacity-10" />
 
-      <div className="relative mx-auto grid min-h-screen max-w-[1460px] grid-cols-1 border-line/60 lg:grid-cols-[228px_minmax(0,1fr)_320px] lg:border-x">
-        <aside className="border-b border-line/60 bg-surface/80 px-5 py-6 backdrop-blur-xl lg:min-h-screen lg:border-b-0 lg:border-r">
-          <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-lg border border-accent/50 bg-accent/10 text-accent shadow-radar">
-              <Radar size={23} aria-hidden="true" />
-            </div>
-            <div>
-              <p className="font-mono text-xs uppercase text-accent">Repo Scout</p>
-              <h1 className="text-lg font-semibold text-ink">开源雷达</h1>
-            </div>
-          </div>
-
-          <nav className="mt-10 grid gap-1.5">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <a
-                  key={item.label}
-                  href={item.active ? "#ranking" : "#featured"}
-                  className={`flex h-11 items-center gap-3 rounded-lg border px-3 text-sm font-medium transition ${
-                    item.active
-                      ? "border-accent/50 bg-accent/10 text-ink shadow-radar"
-                      : "border-transparent text-muted hover:border-line hover:bg-panel/70 hover:text-ink"
-                  }`}
-                >
-                  <Icon size={17} aria-hidden="true" />
-                  {item.label}
-                </a>
-              );
-            })}
+      <div className="relative mx-auto min-h-screen max-w-[1500px] px-4 py-5 sm:px-5 md:px-8 lg:px-12">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <Link href="/" className="flex min-w-0 items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-full border border-orange-400/40 bg-orange-500/10 text-orange-400 shadow-radar">
+              <Radar size={22} aria-hidden="true" />
+            </span>
+            <span className="min-w-0 text-base font-bold text-ink sm:text-lg">Repo Scout 开源雷达</span>
+          </Link>
+          <nav className="grid grid-cols-2 gap-2 rounded-lg bg-panel/30 p-1 text-center text-sm font-semibold text-muted sm:flex sm:items-center">
+            <a href="#ranking" className="rounded-md px-3 py-2 text-ink hover:bg-panel sm:px-4">
+              项目榜单
+            </a>
+            <a href="#useful-projects" className="rounded-md px-3 py-2 hover:bg-panel hover:text-ink sm:px-4">
+              明星项目
+            </a>
           </nav>
+        </header>
 
-          <section className="mt-10">
-            <p className="font-mono text-xs uppercase text-muted">Period</p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {["Day", "Week", "Month"].map((period, index) => (
-                <button
-                  key={period}
-                  className={`h-9 rounded-lg border font-mono text-xs font-semibold transition ${
-                    index === 0
-                      ? "border-accent bg-accent text-canvas"
-                      : "border-line bg-panel/70 text-muted hover:text-ink"
-                  }`}
-                >
-                  {period}
-                </button>
-              ))}
-            </div>
-          </section>
-        </aside>
-
-        <section className="px-5 py-8 md:px-10 lg:px-12">
-          <header className="flex flex-col gap-6 border-b border-line/60 pb-8 xl:flex-row xl:items-start xl:justify-between">
-            <div>
-              <p className="flex items-center gap-2 font-mono text-sm text-accent">
-                <Bot size={16} aria-hidden="true" />
-                AI-assisted open source discovery
-              </p>
-              <h2 className="mt-3 max-w-3xl text-3xl font-semibold leading-tight text-ink md:text-4xl">
-                从 GitHub Trending 中锁定值得学习和跟进的项目
-              </h2>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 xl:w-[260px]">
-              {metrics.map((metric) => {
-                const Icon = metric.icon;
-                return (
-                  <div key={metric.label} className="rounded-lg border border-line/80 bg-panel/70 p-3">
-                    <Icon className="text-muted" size={16} aria-hidden="true" />
-                    <p className="mt-3 font-mono text-xl font-semibold text-accent">{metric.value}</p>
-                    <p className="mt-1 text-xs text-muted">{metric.label}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </header>
-
-          <div id="search" className="mt-8 rounded-lg border border-line/80 bg-surface/80 p-3 shadow-terminal">
-            <div className="flex flex-col gap-3 md:flex-row">
-              <label
-                className="flex min-h-12 flex-1 items-center gap-3 rounded-lg border border-line bg-panel/100 px-4"
-                aria-label="搜索 GitHub 项目"
+        <section className="mx-auto max-w-4xl pb-9 pt-10 text-center md:pb-12 md:pt-16">
+          <h1 className="text-balance text-3xl font-black leading-tight text-ink sm:text-4xl md:text-6xl">
+            发现你的下一个开源练手项目
+          </h1>
+          <p className="mx-auto mt-4 max-w-3xl text-base font-semibold leading-7 text-muted md:mt-5 md:text-xl md:leading-8">
+            按语言、热度和增长筛选 GitHub 项目，找到适合 AI 学习和产品练手的真实仓库
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3 md:mt-8 md:gap-4">
+            {intentFilters.map((filter, index) => (
+              <a
+                key={filter}
+                href={index === 0 ? "#ranking" : index === 1 ? "#fun-projects" : "#useful-projects"}
+                className={`inline-flex h-11 min-w-[96px] items-center justify-center rounded-full px-5 text-sm font-bold shadow-terminal transition md:h-12 md:min-w-[108px] md:px-7 ${
+                  index === 0
+                    ? "bg-orange-500 text-white shadow-[0_0_24px_rgba(249,115,22,0.35)]"
+                    : "border border-[#244169] bg-[#17213d] text-muted hover:border-cyan/40 hover:text-ink"
+                }`}
               >
-                <Terminal size={18} className="text-accent" aria-hidden="true" />
-                <span className="font-mono text-sm font-semibold text-accent">scout&gt;</span>
-                <input
-                  className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-muted"
-                  placeholder="search repositories, languages, topics"
-                />
-              </label>
-              <button className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-cyan px-5 text-sm font-bold text-canvas">
-                <Search size={17} aria-hidden="true" />
-                Run scan
-              </button>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {filters.map((filter, index) => (
-                <button
-                  key={filter}
-                  className={`rounded-lg border px-3 py-2 font-mono text-xs font-medium transition ${
-                    index === 0
-                      ? "border-accent/60 bg-accent/10 text-accent"
-                      : "border-line bg-panel/60 text-muted hover:text-ink"
-                  }`}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
+                {filter}
+              </a>
+            ))}
           </div>
-
-          <section id="ranking" className="mt-8">
-            <div className="mb-4 flex items-end justify-between gap-4">
-              <div>
-                <p className="text-sm text-muted">GitHub Trending</p>
-                <h2 className="text-2xl font-semibold text-ink">今日热门项目榜单</h2>
-              </div>
-              <button className="inline-flex h-10 items-center gap-2 rounded-lg border border-line bg-panel/100 px-4 text-sm font-medium text-ink">
-                <BookOpen size={16} aria-hidden="true" />
-                View all
-              </button>
-            </div>
-
-            <div className="grid gap-4">
-              {trendingRepositories.map((repository) => (
-                <article
-                  key={repository.fullName}
-                  className="relative overflow-hidden rounded-lg border border-line/80 bg-surface/70 p-5 shadow-terminal before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:bg-accent"
-                >
-                  <div className="grid gap-4 md:grid-cols-[52px_1fr] xl:grid-cols-[52px_1fr_170px]">
-                    <div className="font-mono text-xl font-bold text-accent">
-                      #{String(repository.rank).padStart(2, "0")}
-                    </div>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold text-ink">{repository.fullName}</h3>
-                        <span className="rounded-md border border-line bg-panel/100 px-2 py-1 font-mono text-xs font-medium text-cyan">
-                          {repository.language}
-                        </span>
-                        <span className="rounded-md border border-accent/40 bg-accent/10 px-2 py-1 font-mono text-xs font-medium text-accent">
-                          {repository.fit}
-                        </span>
-                      </div>
-                      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">{repository.description}</p>
-                      <div className="mt-3 hidden flex-wrap gap-2 md:flex">
-                        {repository.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-md border border-line px-2 py-1 font-mono text-xs text-muted"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-[1fr_40px] items-center gap-3 md:col-start-2 xl:col-start-auto">
-                      <div className="border-l border-line pl-4 text-sm">
-                        <div className="flex items-center gap-2 font-mono font-semibold text-ink">
-                          <Star size={15} className="text-amber" aria-hidden="true" />
-                          {repository.stars}
-                        </div>
-                        <div className="mt-2 flex items-center gap-2 font-mono text-muted">
-                          <GitFork size={15} aria-hidden="true" />
-                          {repository.forks}
-                        </div>
-                      </div>
-                      <a
-                        className="grid h-10 w-10 place-items-center rounded-lg border border-line text-muted hover:border-cyan hover:text-cyan"
-                        href={`https://github.com/${repository.fullName}`}
-                        aria-label={`打开 ${repository.fullName}`}
-                      >
-                        <ExternalLink size={18} aria-hidden="true" />
-                      </a>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
         </section>
 
-        <aside id="featured" className="border-t border-line/60 bg-surface/80 px-5 py-8 backdrop-blur-xl lg:min-h-screen lg:border-l lg:border-t-0">
-          <section className="rounded-lg border border-line/80 bg-panel/60 p-5 shadow-terminal">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted">AI Curated</p>
-                <h2 className="mt-1 text-xl font-semibold text-ink">明星项目专题</h2>
+        <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-9">
+          <div>
+            <form id="ranking" action="/" className="scroll-mt-8 grid gap-4">
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_230px]">
+                <label
+                  className="flex min-h-14 items-center gap-4 rounded-lg border border-[#244169] bg-[#10213d]/90 px-5 shadow-terminal"
+                  aria-label="搜索 GitHub 项目"
+                >
+                  <Search size={22} className="text-muted" aria-hidden="true" />
+                  <input
+                    name="q"
+                    defaultValue={query}
+                    className="w-full bg-transparent text-base font-semibold text-ink outline-none placeholder:text-muted"
+                    placeholder="搜索项目名称或技术..."
+                  />
+                </label>
+                <div className="flex min-h-14 items-center justify-between rounded-lg border border-[#244169] bg-[#10213d]/90 px-5 text-sm font-bold text-muted shadow-terminal">
+                  <span>排序</span>
+                  <span className="flex items-center gap-2 text-cyan">
+                    综合评分
+                    <SlidersHorizontal size={17} aria-hidden="true" />
+                  </span>
+                </div>
               </div>
-              <Sparkles className="text-amber" size={24} aria-hidden="true" />
-            </div>
-            <div className="mt-5 divide-y divide-line">
-              {featuredProjects.map((project) => (
-                <article key={project.repo} className="py-4 first:pt-0 last:pb-0">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-medium text-muted">{project.title}</p>
-                      <h3 className="mt-1 text-sm font-semibold text-ink">{project.repo}</h3>
-                    </div>
-                    <div className="rounded-md border border-accent/30 bg-accent/10 px-2 py-1 font-mono text-xs font-semibold text-accent">
-                      {project.score}
-                    </div>
+
+              <div className="flex gap-3 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+                {languageFilters.map((filter, index) => (
+                  <Link
+                    key={filter}
+                    href={index === 0 ? "/#ranking" : `/?q=${encodeURIComponent(filter)}#ranking`}
+                    className={`inline-flex h-10 min-w-[74px] shrink-0 items-center justify-center rounded-full border px-4 text-sm font-bold transition ${
+                      (index === 0 && !query) || query === filter
+                        ? "border-orange-500 bg-orange-500 text-white"
+                        : "border-[#244169] bg-[#10213d]/80 text-muted hover:text-ink"
+                    }`}
+                  >
+                    {filter}
+                  </Link>
+                ))}
+              </div>
+            </form>
+
+            {dataError ? (
+              <div className="mt-8 rounded-lg border border-amber/50 bg-amber/10 p-5 text-sm font-semibold text-amber">
+                后端数据暂不可用：{dataError}
+              </div>
+            ) : null}
+            {primaryRepositories.length === 0 && !dataError ? (
+              <div className="mt-8 rounded-lg border border-line/80 bg-surface/70 p-5 text-sm text-muted shadow-terminal">
+                暂无匹配项目。换一个关键词重新扫描。
+              </div>
+            ) : null}
+
+            <div id="fun-projects" className="mt-7 scroll-mt-8">
+              <div className="mb-4 flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold text-orange-400">好玩项目</p>
+                  <h2 className="mt-1 text-xl font-black text-ink sm:text-2xl">适合拆解和练手的项目卡片</h2>
+                </div>
+                <span className="hidden rounded-full border border-[#244169] bg-[#10213d] px-4 py-2 text-sm font-bold text-muted md:inline-flex">
+                  {primaryRepositories.length} repos
+                </span>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {primaryRepositories.map((repository) => (
+                <Link
+                  key={repository.fullName}
+                  href={buildRepositoryHref(repository.fullName)}
+                  className="flex min-h-[320px] flex-col rounded-lg border border-[#254a76] bg-[#172b50]/90 p-4 shadow-terminal sm:min-h-[360px] sm:p-5 xl:min-h-[382px]"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <h2 className="min-w-0 break-words text-lg font-black leading-tight text-ink sm:text-xl">{repository.name}</h2>
+                    <span className="shrink-0 rounded-full border border-cyan/30 bg-cyan/10 px-3 py-1 text-sm font-bold text-cyan">
+                      {repository.language}
+                    </span>
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-muted">{project.reason}</p>
+
+                  <p className="mt-4 line-clamp-3 min-h-[72px] text-sm font-semibold leading-6 text-muted">
+                    {repository.description}
+                  </p>
+                  <p className="mt-3 line-clamp-2 min-h-[44px] text-sm font-bold leading-6 text-muted">
+                    MVP: 拆解技术栈、增长信号和可学习模块。
+                  </p>
+
+                  <div className="mt-5 grid gap-3">
+                    {scoreRows.map((row, index) => {
+                      const value = index === 3 ? scoreFor(repository, 4) : scoreFor(repository, index);
+                      return (
+                        <div key={row.label} className="grid grid-cols-[76px_1fr_38px] items-center gap-3">
+                          <span className="text-sm font-bold text-muted">{row.label}</span>
+                          <span className="h-2.5 rounded-full bg-[#20395d]">
+                            <span
+                              className={`block h-full rounded-full ${row.color}`}
+                              style={{ width: scoreWidth(value) }}
+                            />
+                          </span>
+                          <span className="text-right font-mono text-sm font-bold text-muted">{value}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5 text-sm font-bold text-muted">
+                    <span className="flex items-center gap-1.5">
+                      难度
+                      <span className="text-orange-400">●●</span>
+                      <span className="text-[#2a3e5f]">●●●</span>
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Timer size={15} aria-hidden="true" />
+                      {repository.gained} stars
+                    </span>
+                  </div>
+                </Link>
+              ))}
+              </div>
+            </div>
+          </div>
+
+          <aside id="useful-projects" className="scroll-mt-8 lg:pt-[76px]">
+            <div className="flex items-center gap-3">
+              <Flame className="text-orange-400" size={25} aria-hidden="true" />
+              <div>
+                <p className="text-sm font-bold text-orange-400">好用项目</p>
+                <h2 className="mt-1 text-xl font-black text-ink sm:text-2xl">GitHub 明星项目</h2>
+                <p className="mt-1 text-sm font-semibold text-muted">最近增长最快的开源仓库</p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-5">
+              {sidebarProjects.map((project) => (
+                <article
+                  key={project.repo}
+                  className="rounded-lg border border-[#254a76] bg-[#172b50]/90 p-5 shadow-terminal"
+                >
+                  <p className="text-xs font-bold text-cyan">{project.title}</p>
+                  <h3 className="mt-2 break-words text-lg font-black text-ink">{project.repo}</h3>
+                  <p className="mt-3 line-clamp-3 text-sm font-semibold leading-6 text-muted">{project.reason}</p>
+                  <div className="mt-4 flex items-center gap-2 text-sm font-bold text-muted">
+                    <span className="h-2.5 w-2.5 rounded-full bg-cyan" />
+                    AI Curated
+                  </div>
+                  <div className="mt-4 flex items-center gap-4 font-mono text-sm font-bold text-muted">
+                    <span className="flex items-center gap-1.5">
+                      <Star size={16} className="text-amber" aria-hidden="true" />
+                      {project.score}
+                    </span>
+                    <span className="flex items-center gap-1.5 text-orange-400">
+                      <Flame size={16} aria-hidden="true" />
+                      Top pick
+                    </span>
+                  </div>
+                  <Link
+                    href={buildRepositoryHref(project.repo)}
+                    className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-orange-500 px-4 text-sm font-black text-white"
+                  >
+                    查看
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
                 </article>
               ))}
             </div>
-          </section>
 
-          <section className="mt-5 rounded-lg border border-accent/30 bg-accent/10 p-5 shadow-radar">
-            <div className="flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-lg border border-accent/30 bg-canvas/50">
-                <Gauge size={18} aria-hidden="true" />
+            <section className="mt-6 rounded-lg border border-line/80 bg-panel/50 p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-muted">实时雷达</span>
+                <Sparkles size={18} className="text-amber" aria-hidden="true" />
               </div>
-              <div>
-                <p className="text-sm text-muted">Radar status</p>
-                <h2 className="font-semibold text-ink">Daily sync ready</h2>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-lg bg-[#10213d] p-4">
+                  <p className="font-mono text-2xl font-black text-cyan">{metricValue(metrics, "Tracked repos")}</p>
+                  <p className="mt-1 text-xs font-bold text-muted">项目</p>
+                </div>
+                <div className="rounded-lg bg-[#10213d] p-4">
+                  <p className="font-mono text-2xl font-black text-cyan">{metricValue(metrics, "Languages")}</p>
+                  <p className="mt-1 text-xs font-bold text-muted">语言</p>
+                </div>
               </div>
-            </div>
-            <div className="mt-5 flex items-center justify-between rounded-lg border border-line/80 bg-panel/50 px-3 py-2">
-              <span className="text-xs text-muted">New snapshots</span>
-              <span className="font-mono text-sm font-semibold text-accent">3 / 8 tests</span>
-            </div>
-          </section>
-
-          <a
-            href="https://github.com/trending"
-            className="mt-4 flex h-12 items-center justify-between rounded-lg border border-line bg-panel/75 px-4 text-sm font-medium text-ink"
-          >
-            Open GitHub Trending
-            <ArrowUpRight size={17} aria-hidden="true" />
-          </a>
-        </aside>
+              <a
+                href="https://github.com/trending"
+                className="mt-4 flex h-11 items-center justify-between rounded-lg border border-line bg-[#10213d] px-4 text-sm font-bold text-ink"
+              >
+                Open GitHub Trending
+                <ExternalLink size={16} aria-hidden="true" />
+              </a>
+            </section>
+          </aside>
+        </section>
       </div>
     </main>
   );

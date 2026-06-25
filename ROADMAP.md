@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-真实数据版建设。
+AI 精选版建设。
 
 ## 已完成
 
@@ -25,10 +25,36 @@
 - 将首页视觉从营销页调整为开源发现工作台布局，包含侧边导航、榜单工作区和右侧洞察面板。
 - 使用 Open Design 记录首页极客风工作台设计，并将前端首页改造为深色终端雷达风格。
 - 优化首页极客风工作台的信息密度，让侧栏、榜单和状态面板更清爽。
+- 将首页榜单、搜索和精选专题面板从硬编码示例数据切换为后端 API 数据源，并增加 API 不可用时的降级状态。
+- 完成前端连接本地 FastAPI 服务后的真实数据渲染验证。
+- 修复热门榜单 API 混合多次抓取快照导致首页排名编号重复的问题，榜单现在只读取最新一次成功抓取 run。
+- 将首页改造成参考练手项目站点的布局：顶部导航、居中 Hero、搜索筛选区、项目卡片网格和右侧明星项目栏。
+- 调整首页参考布局的筛选文案和展示密度，将主筛选改为“全部项目 / 好玩 / 好用”，并收紧搜索区、卡片和右侧栏间距。
+- 优化首页主筛选按钮交互，将跳转改为同页平滑滚动，并为目标区域增加滚动偏移。
+- 将首页主筛选按钮分别映射到对应区域：“全部项目”到搜索区，“好玩”到项目卡片网格，“好用”到右侧明星项目栏。
+- 固定前端开发服务端口为 `3000`，避免端口占用时自动启动第二个 Next dev server。
+- 确认 AI 精选方案：规则评分负责候选筛选和排序，AI 负责生成入选理由和专题说明。
+- 将 GitHub Trending HTML 解析从标准库 `HTMLParser` 状态机切换为 BeautifulSoup。
+- 确认开发默认：AI 精选先用本地模板降级，定时抓取用应用内轻量调度，MVP 全程使用 SQLite，手动抓取接口使用本地调用或简单 admin token，当前只考虑单机部署。
+- 添加热门数据应用内定时更新能力，可通过环境变量启用后台调度。
+- 添加手动触发 GitHub Trending 抓取的后端接口 `POST /api/admin/ingest/trending`，支持本地调用或 admin token，并与定时任务共享抓取锁。
+- 添加 AI 精选生成能力，支持从最新 Trending run 规则评分生成精选专题和本地模板理由。
+- 添加手动触发 AI 精选生成的后端接口 `POST /api/admin/curate` 和本地命令 `npm run curate:featured -- --limit 5`。
+- 首页展示真实 AI 精选专题数据，右侧明星项目栏读取 `/api/featured`，并在 API 不可用时回退到 Trending 项目。
+- 添加项目详情页 `/repositories/[owner]/[name]`，展示仓库核心信息、GitHub 链接、精选理由和规则评分。
+- 扩展项目详情 API，精选项目会返回“为什么值得关注”的入选理由和学习评分。
+- 添加本地端到端演示脚本 `scripts/local-demo.sh`，支持真实 GitHub Trending 数据和无网络示例数据两种模式。
+- 更新 README 本地开发说明，覆盖依赖安装、真实数据抓取、AI 精选生成、前后端启动和访问入口。
+- 优化首页和项目详情页移动端体验，收紧手机端间距、卡片高度和长仓库名换行。
+- 增加本地真实运行验收记录 `docs/runtime-acceptance.md`，记录 API、首页、详情页和移动端响应式证据。
+- 增加 MVP 发布检查清单 `docs/mvp-release-checklist.md`，集中记录当前能力、发布前检查项、验证命令和已知风险。
+- 跟进 Next.js 嵌套 `postcss` 漏洞风险，新增 `docs/dependency-risks.md` 记录 audit 结果、上游状态和当前不采用 `npm audit fix --force` 的原因。
+- 增加 MVP 发布就绪摘要 `docs/release-readiness.md`，明确当前适合本地演示/单机自用验收，不适合直接公开生产发布。
+- 修复前端 `typecheck` 单独运行依赖 `.next/types` 已存在的问题，改为先执行 `next typegen` 再运行 `tsc --noEmit`。
 
 ## 进行中
 
-- 将前端示例数据切换为后端 API 数据。
+- 提交/打包准备：整理当前大批未提交改动的提交边界。
 
 ## 功能开发计划
 
@@ -61,7 +87,8 @@
 
 - 定义 AI 筛选标准：适合初学者、文档质量、活跃度、学习价值、AI 相关度。
 - 从 Trending 项目中筛选候选项目。
-- 调用 AI 生成入选理由和专题分类。
+- 使用规则评分确定候选短名单和排序。
+- 调用 AI 生成入选理由和专题说明。
 - 存储精选专题和精选项目。
 - 首页展示 AI 精选专题栏。
 - 项目详情页展示“为什么值得关注”。
@@ -80,13 +107,12 @@
 
 ## 下一步
 
-- 添加热门数据定时更新能力。
-- 添加手动触发抓取的后端接口。
+- 整理当前大批未提交改动的提交边界。
+- 按功能边界提交已验证改动。
 
 ## 阻塞
 
-- AI 精选方案未确认。
-- SQLite 迁移到 PostgreSQL 的时机未确认。
+- 暂无。
 
 ## 已知风险
 
@@ -111,3 +137,28 @@
 - 2026-06-25：已重启前端开发服务并确认 `http://127.0.0.1:3000` 返回 200。
 - 2026-06-25：已通过 `npm run lint:web` 和 `npm run build:web` 验证首页极客风工作台视觉改造。
 - 2026-06-25：已通过 `npm run lint:web`、`npm run build:web` 和 `http://127.0.0.1:3000` 返回 200 验证首页清爽化调整。
+- 2026-06-25：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `npm run build:web` 验证首页 API 数据源改造。
+- 2026-06-25：已启动前端开发服务并确认 `http://127.0.0.1:3001` 返回 200；当前环境后端缺少 `uvicorn`，页面以 API 不可用降级状态渲染。
+- 2026-06-25：已通过项目内 `apps/api/.venv/bin/uvicorn app.main:app --reload --app-dir apps/api` 启动后端，并验证 `GET /health`、`GET /api/repositories/trending?limit=3`、`GET /api/repositories/search?q=Python&limit=3`、`GET /api/featured`。
+- 2026-06-25：已确认 `http://127.0.0.1:3001/` 渲染真实仓库数据 `langchain-ai/langchain` 和 `open-webui/open-webui`，且不再显示后端不可用降级状态；已确认 `http://127.0.0.1:3001/?q=Python` 渲染搜索结果。
+- 2026-06-25：已通过 `apps/api/.venv/bin/python -m unittest apps/api/tests/test_github_trending.py`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`npm run test:web` 和 `npm run lint:web` 验证榜单编号修复；已确认 `GET /api/repositories/trending?limit=10` 返回连续 `rank`，首页显示 `#01`、`#02`、`#03`。
+- 2026-06-25：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `npm run build:web` 验证首页布局改造；已确认 `http://127.0.0.1:3001/` 返回 200，包含新 Hero 文案、右侧明星项目栏和真实仓库数据，且不显示后端不可用降级状态。
+- 2026-06-25：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `npm run build:web` 验证首页布局细节调整；已确认 `http://127.0.0.1:3001/` 包含“全部项目 / 好玩 / 好用”筛选按钮和右侧明星项目栏。
+- 2026-06-25：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `npm run build:web` 验证首页主筛选平滑滚动交互调整。
+- 2026-06-25：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `npm run build:web` 验证首页主筛选区域锚点调整。
+- 2026-06-25：已确认 `3000/3001` 无残留监听进程，并通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 验证前端 dev 端口固定为 `3000` 的脚本调整。
+- 2026-06-25：已确认 AI 精选采用“规则评分优先，AI 生成解释”的方案，并同步更新 MVP、架构和数据模型文档。
+- 2026-06-25：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests` 和 `apps/api/.venv/bin/python -m compileall apps/api/app` 验证 GitHub Trending BeautifulSoup 解析切换。
+- 2026-06-25：已确认剩余开发默认规则，并同步更新 MVP、架构、数据模型和路线图文档。
+- 2026-06-25：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app` 和 FastAPI 路由导入检查验证手动抓取接口、admin token 拦截、应用内调度器并发跳过和共享抓取锁。
+- 2026-06-25：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、FastAPI admin 路由导入检查和 `REPO_SCOUT_DATABASE_URL=sqlite:///:memory: npm run curate:featured -- --limit 2` 验证 AI 精选规则评分、模板理由、重复运行去重、手动触发接口和本地命令入口。
+- 2026-06-25：已通过 CodeGraph 确认首页读取 `/api/featured` 渲染右侧明星项目栏，并通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `npm run build:web` 验证首页真实 AI 精选专题展示路径。
+- 2026-06-25：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `npm run build:web` 验证项目详情 API 精选理由、首页详情链接和 `/repositories/[owner]/[name]` 详情页。
+- 2026-06-25：已通过 `scripts/test-local-demo.sh`、`bash -n scripts/local-demo.sh`、`bash -n scripts/test-local-demo.sh`、`npm run dev:api -- --help`、`REPO_SCOUT_DATABASE_URL=sqlite:///:memory: npm run seed:api`、`npm run ingest:trending -- --help` 和 `REPO_SCOUT_DATABASE_URL=sqlite:///:memory: npm run curate:featured -- --limit 2` 验证本地端到端演示脚本、README 命令和 root 数据入口。
+- 2026-06-25：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `npm run build:web` 对当前真实数据闭环改动做全量回归验证。
+- 2026-06-25：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck`、`npm run build:web`、`apps/api/.venv/bin/python -m unittest discover apps/api/tests` 和 `apps/api/.venv/bin/python -m compileall apps/api/app` 验证首页与详情页移动端布局优化。
+- 2026-06-25：已启动本地 API 和前端服务，验证 `GET /health`、`GET /api/repositories/trending?limit=1`、`GET /api/featured`、首页 `http://127.0.0.1:3000` 和详情页 `http://127.0.0.1:3000/repositories/calesthio/OpenMontage`；本轮 in-app Browser 和 Playwright 不可用，已将运行验收证据记录到 `docs/runtime-acceptance.md`。
+- 2026-06-26：已通过 `scripts/test-mvp-release-checklist.sh` 和 `bash -n scripts/test-mvp-release-checklist.sh` 验证 MVP 发布检查清单和 README 文档入口。
+- 2026-06-26：已通过 `npm audit --omit=dev`、`npm ls postcss`、`npm view next version`、`npm view next@15 version`、`npm view next@16 version` 和 `npm view next@16.2.9 engines peerDependencies dependencies.postcss version` 跟进 Next.js 内部 `postcss@8.4.31` 风险；确认当前稳定 Next `16.2.9` 仍未修复，已记录到 `docs/dependency-risks.md`。
+- 2026-06-26：已新增 `docs/release-readiness.md`，整理 MVP 当前发布就绪判断、已处理事项、剩余风险和交付前验证基线。
+- 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`scripts/test-mvp-release-checklist.sh`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck`、`npm run build:web` 和 `git diff --check` 做提交前完整验证；后端测试仍有 SQLite `ResourceWarning`，测试结果为通过。

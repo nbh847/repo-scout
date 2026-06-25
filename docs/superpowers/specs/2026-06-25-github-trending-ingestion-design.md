@@ -26,7 +26,7 @@ Add one focused module under `apps/api/app/`:
 
 - `github_trending.py` owns URL construction, HTML fetching, HTML parsing, and database ingestion.
 
-The parser uses Python standard library `html.parser` to avoid adding dependencies. Tests use a local HTML fixture so parsing and ingestion can be verified without network access.
+The parser uses BeautifulSoup with the built-in `html.parser` parser backend. Tests use a local HTML fixture so parsing and ingestion can be verified without network access.
 
 ## Data Flow
 

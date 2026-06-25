@@ -8,9 +8,11 @@
     "dev:web": "npm --workspace apps/web run dev",
     "build:web": "npm --workspace apps/web run build",
     "lint:web": "npm --workspace apps/web run lint",
-    "dev:api": "uvicorn app.main:app --reload --app-dir apps/api",
-    "seed:api": "python -m app.seed",
-    "ingest:trending": "cd apps/api && python -m app.github_trending"
+    "test:web": "npm --workspace apps/web run test:view-models",
+    "dev:api": "apps/api/.venv/bin/uvicorn app.main:app --reload --app-dir apps/api",
+    "seed:api": "cd apps/api && .venv/bin/python -m app.seed",
+    "ingest:trending": "cd apps/api && .venv/bin/python -m app.github_trending",
+    "curate:featured": "cd apps/api && .venv/bin/python -m app.curation"
   },
   "overrides": {
     "postcss": "^8.5.10",

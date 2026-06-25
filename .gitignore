@@ -33,6 +33,9 @@ pnpm-debug.log*
 # Local agent instructions
 AGENTS.md
 
+# Local code index
+.codegraph/
+
 # Runtime data
 *.sqlite
 *.sqlite3

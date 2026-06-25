@@ -4,6 +4,8 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
+from bs4 import BeautifulSoup
+from fastapi import HTTPException
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -19,7 +21,9 @@ from app.github_trending import (
     parse_trending_html,
     resolve_ca_file,
 )
+from app.main import trigger_github_trending_ingest, trending_repositories
 from app.models import Repository, RepositorySnapshot, TrendingRun
+from app.scheduler import TrendingIngestionScheduler, trending_ingestion_lock
 
 
 TRENDING_HTML = """
@@ -95,6 +99,12 @@ class GitHubTrendingParserTest(unittest.TestCase):
         self.assertIsNone(repositories[1].primary_language)
         self.assertEqual(repositories[1].stars, 2500)
         self.assertEqual(repositories[1].forks, 1100)
+
+    def test_parse_trending_html_uses_beautifulsoup(self) -> None:
+        with patch("app.github_trending.BeautifulSoup", wraps=BeautifulSoup) as parser:
+            parse_trending_html(TRENDING_HTML)
+
+        parser.assert_called_once_with(TRENDING_HTML, "html.parser")
 
 
 class GitHubTrendingIngestionTest(unittest.TestCase):
@@ -205,6 +215,150 @@ class GitHubTrendingIngestionTest(unittest.TestCase):
         self.assertEqual(repository.stars, 150)
         self.assertEqual(repository.forks, 12)
         self.assertEqual(snapshot_count, 1)
+
+    def test_trending_repositories_returns_latest_successful_run_only(self) -> None:
+        with Session(self.engine) as db:
+            ingest_trending_repositories(
+                db,
+                [
+                    TrendingRepository(
+                        rank=1,
+                        owner="old-owner",
+                        name="old-project",
+                        url="https://github.com/old-owner/old-project",
+                        description="Old run repository.",
+                        primary_language="Python",
+                        stars=100,
+                        forks=10,
+                        stars_gained=5,
+                    )
+                ],
+                period="daily",
+                language=None,
+            )
+            ingest_trending_repositories(
+                db,
+                [
+                    TrendingRepository(
+                        rank=1,
+                        owner="new-owner",
+                        name="new-project",
+                        url="https://github.com/new-owner/new-project",
+                        description="Newest run first repository.",
+                        primary_language="TypeScript",
+                        stars=200,
+                        forks=20,
+                        stars_gained=15,
+                    ),
+                    TrendingRepository(
+                        rank=2,
+                        owner="second-owner",
+                        name="second-project",
+                        url="https://github.com/second-owner/second-project",
+                        description="Newest run second repository.",
+                        primary_language="Go",
+                        stars=150,
+                        forks=15,
+                        stars_gained=10,
+                    ),
+                ],
+                period="daily",
+                language=None,
+            )
+
+            repositories = trending_repositories(limit=10, db=db)
+
+        self.assertEqual(
+            [repository.full_name for repository in repositories],
+            ["new-owner/new-project", "second-owner/second-project"],
+        )
+        self.assertEqual([repository.rank for repository in repositories], [1, 2])
+
+
+class GitHubTrendingAdminEndpointTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.engine = create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(bind=self.engine)
+
+    def test_trigger_github_trending_ingest_reuses_ingestion_service(self) -> None:
+        with Session(self.engine) as db:
+            expected_run = TrendingRun(
+                id=42,
+                source="github_trending",
+                period="weekly",
+                language="python",
+                status="success",
+            )
+            with patch("app.main.ingest_github_trending", return_value=expected_run) as ingest:
+                result = trigger_github_trending_ingest(
+                    period="weekly",
+                    language="python",
+                    limit=5,
+                    request=None,
+                    admin_token=None,
+                    db=db,
+                )
+
+        ingest.assert_called_once_with(db, period="weekly", language="python", limit=5)
+        self.assertEqual(result.id, 42)
+        self.assertEqual(result.status, "success")
+        self.assertEqual(result.period, "weekly")
+        self.assertEqual(result.language, "python")
+
+    def test_trigger_github_trending_ingest_rejects_non_local_request_without_token(self) -> None:
+        request = SimpleNamespace(
+            client=SimpleNamespace(host="203.0.113.10"),
+            headers={},
+        )
+
+        with Session(self.engine) as db:
+            with self.assertRaises(HTTPException) as error:
+                trigger_github_trending_ingest(
+                    request=request,
+                    admin_token=None,
+                    db=db,
+                )
+
+        self.assertEqual(error.exception.status_code, 403)
+
+    def test_trigger_github_trending_ingest_rejects_concurrent_run(self) -> None:
+        acquired = trending_ingestion_lock.acquire(blocking=False)
+        self.assertTrue(acquired)
+        try:
+            with Session(self.engine) as db:
+                with self.assertRaises(HTTPException) as error:
+                    trigger_github_trending_ingest(
+                        period="daily",
+                        language=None,
+                        limit=5,
+                        request=None,
+                        admin_token=None,
+                        db=db,
+                    )
+        finally:
+            trending_ingestion_lock.release()
+
+        self.assertEqual(error.exception.status_code, 409)
+
+
+class GitHubTrendingSchedulerTest(unittest.TestCase):
+    def test_scheduler_skips_tick_when_previous_run_is_active(self) -> None:
+        calls = 0
+        scheduler = TrendingIngestionScheduler(
+            session_factory=lambda: SimpleNamespace(close=lambda: None),
+            ingest=lambda db, period, language, limit: None,
+            interval_seconds=60,
+        )
+        scheduler._running = True
+
+        def ingest(db: object, period: str, language: str | None, limit: int | None) -> None:
+            nonlocal calls
+            calls += 1
+
+        scheduler.ingest = ingest
+        scheduler.run_once()
+
+        self.assertEqual(calls, 0)
 
 
 class GitHubTrendingFetchEnvironmentTest(unittest.TestCase):

@@ -20,6 +20,12 @@ class TrendingRepositoryOut(RepositoryOut):
     stars_gained: int
 
 
+class RepositoryDetailOut(RepositoryOut):
+    featured_reason: str | None = None
+    beginner_score: int | None = None
+    learning_value_score: int | None = None
+
+
 class FeaturedRepositoryOut(RepositoryOut):
     rank: int
     reason: str
@@ -37,3 +43,14 @@ class FeaturedCollectionOut(BaseModel):
 class HealthOut(BaseModel):
     status: str
     checked_at: datetime
+
+
+class TrendingRunOut(BaseModel):
+    id: int
+    source: str
+    period: str
+    language: str | None
+    status: str
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    error_message: str | None = None

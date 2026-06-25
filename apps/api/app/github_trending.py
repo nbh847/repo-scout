@@ -1,13 +1,13 @@
 import argparse
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from html.parser import HTMLParser
 from pathlib import Path
 import re
 import ssl
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
+from bs4 import BeautifulSoup
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -66,122 +66,51 @@ def parse_stars_gained(value: str) -> int:
     return parse_count(value)
 
 
-class GitHubTrendingParser(HTMLParser):
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self.repositories: list[TrendingRepository] = []
-        self._article: dict[str, str | None] | None = None
-        self._in_heading = False
-        self._capture: str | None = None
-        self._parts: list[str] = []
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        attributes = dict(attrs)
-        class_name = attributes.get("class", "")
-
-        if tag == "article" and "Box-row" in class_name:
-            self._article = {
-                "repo_text": None,
-                "repo_href": None,
-                "description": None,
-                "language": None,
-                "stars": None,
-                "forks": None,
-                "stars_gained": None,
-            }
-            return
-
-        if self._article is None:
-            return
-
-        if tag == "h2":
-            self._in_heading = True
-            return
-
-        if tag == "a":
-            href = attributes.get("href", "")
-            if self._in_heading and _is_repository_href(href):
-                self._article["repo_href"] = href
-                self._start_capture("repo_text")
-            elif href.endswith("/stargazers"):
-                self._start_capture("stars")
-            elif href.endswith("/forks"):
-                self._start_capture("forks")
-            return
-
-        if tag == "p" and "col-9" in class_name:
-            self._start_capture("description")
-            return
-
-        if tag == "span" and attributes.get("itemprop") == "programmingLanguage":
-            self._start_capture("language")
-            return
-
-        if tag == "span" and "float-sm-right" in class_name:
-            self._start_capture("stars_gained")
-
-    def handle_data(self, data: str) -> None:
-        if self._capture:
-            self._parts.append(data)
-
-    def handle_endtag(self, tag: str) -> None:
-        if self._capture and tag in {"a", "p", "span"}:
-            self._finish_capture()
-
-        if tag == "h2":
-            self._in_heading = False
-            return
-
-        if tag == "article" and self._article is not None:
-            repository = self._build_repository()
-            if repository is not None:
-                self.repositories.append(repository)
-            self._article = None
-
-    def _start_capture(self, field: str) -> None:
-        self._capture = field
-        self._parts = []
-
-    def _finish_capture(self) -> None:
-        if self._article is not None and self._capture:
-            text = " ".join(" ".join(self._parts).split())
-            self._article[self._capture] = text or None
-        self._capture = None
-        self._parts = []
-
-    def _build_repository(self) -> TrendingRepository | None:
-        assert self._article is not None
-
-        href = self._article["repo_href"]
-        if not href:
-            return None
-
-        path_parts = href.strip("/").split("/")
-        if len(path_parts) != 2:
-            return None
-
-        owner, name = path_parts
-        return TrendingRepository(
-            rank=len(self.repositories) + 1,
-            owner=owner,
-            name=name,
-            url=f"https://github.com/{owner}/{name}",
-            description=self._article["description"],
-            primary_language=self._article["language"],
-            stars=parse_count(self._article["stars"] or ""),
-            forks=parse_count(self._article["forks"] or ""),
-            stars_gained=parse_stars_gained(self._article["stars_gained"] or ""),
-        )
-
-
 def _is_repository_href(href: str) -> bool:
     return bool(re.fullmatch(r"/[^/\s]+/[^/\s]+", href))
 
 
+def _element_text(element: object | None) -> str | None:
+    if element is None:
+        return None
+
+    text_getter = getattr(element, "get_text")
+    text = " ".join(text_getter(" ", strip=True).split())
+    return text or None
+
+
 def parse_trending_html(html: str) -> list[TrendingRepository]:
-    parser = GitHubTrendingParser()
-    parser.feed(html)
-    return parser.repositories
+    soup = BeautifulSoup(html, "html.parser")
+    repositories: list[TrendingRepository] = []
+
+    for article in soup.select("article.Box-row"):
+        link = article.select_one("h2 a[href]")
+        href = link.get("href", "") if link else ""
+        if not isinstance(href, str) or not _is_repository_href(href):
+            continue
+
+        owner, name = href.strip("/").split("/")
+        description = _element_text(article.select_one("p.col-9"))
+        language = _element_text(article.select_one('span[itemprop="programmingLanguage"]'))
+        stars = _element_text(article.select_one('a[href$="/stargazers"]'))
+        forks = _element_text(article.select_one('a[href$="/forks"]'))
+        stars_gained = _element_text(article.select_one("span.float-sm-right"))
+
+        repositories.append(
+            TrendingRepository(
+                rank=len(repositories) + 1,
+                owner=owner,
+                name=name,
+                url=f"https://github.com/{owner}/{name}",
+                description=description,
+                primary_language=language,
+                stars=parse_count(stars or ""),
+                forks=parse_count(forks or ""),
+                stars_gained=parse_stars_gained(stars_gained or ""),
+            )
+        )
+
+    return repositories
 
 
 def fetch_trending_html(period: str = "daily", language: str | None = None) -> str:

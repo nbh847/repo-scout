@@ -23,6 +23,8 @@
 - 实现 Trending HTML 解析、仓库 upsert、抓取运行记录和榜单快照写入。
 - 添加手动抓取命令 `npm run ingest:trending -- --period daily --limit 20`。
 - 将首页视觉从营销页调整为开源发现工作台布局，包含侧边导航、榜单工作区和右侧洞察面板。
+- 使用 Open Design 记录首页极客风工作台设计，并将前端首页改造为深色终端雷达风格。
+- 优化首页极客风工作台的信息密度，让侧栏、榜单和状态面板更清爽。
 
 ## 进行中
 
@@ -107,3 +109,5 @@
 - 2026-06-25：已通过真实 GitHub Trending 抓取验证：`python -m app.github_trending --period daily --limit 3` 写入 1 次成功 run 和 3 条快照。
 - 2026-06-25：已通过 `npm run lint:web` 和 `npm run build:web` 验证首页工作台视觉改造。
 - 2026-06-25：已重启前端开发服务并确认 `http://127.0.0.1:3000` 返回 200。
+- 2026-06-25：已通过 `npm run lint:web` 和 `npm run build:web` 验证首页极客风工作台视觉改造。
+- 2026-06-25：已通过 `npm run lint:web`、`npm run build:web` 和 `http://127.0.0.1:3000` 返回 200 验证首页清爽化调整。

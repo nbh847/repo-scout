@@ -5,18 +5,30 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#18202f",
-        muted: "#667085",
-        canvas: "#eef2f6",
-        surface: "#f8fafc",
-        panel: "#f7f9fc",
-        line: "#d7dee8",
-        accent: "#0f766e",
-        "accent-soft": "#dff5ef",
-        amber: "#b45309",
+        ink: "#d9f4ee",
+        muted: "#78909c",
+        canvas: "#05080d",
+        surface: "#071018",
+        panel: "#0b151f",
+        line: "#1f3342",
+        accent: "#45f58d",
+        "accent-soft": "#0f2f20",
+        cyan: "#27d8ff",
+        amber: "#f5b74d",
       },
       boxShadow: {
-        soft: "0 10px 34px rgba(24, 32, 47, 0.08)",
+        terminal: "0 18px 60px rgba(0, 0, 0, 0.28)",
+        radar: "0 0 28px rgba(69, 245, 141, 0.16)",
+      },
+      backgroundImage: {
+        grid:
+          "linear-gradient(rgba(69, 245, 141, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(39, 216, 255, 0.035) 1px, transparent 1px)",
+        scanline: "linear-gradient(rgba(255, 255, 255, 0.035) 50%, transparent 50%)",
+        signal: "linear-gradient(90deg, #45f58d, #27d8ff)",
+      },
+      backgroundSize: {
+        grid: "32px 32px",
+        scanline: "100% 4px",
       },
     },
   },

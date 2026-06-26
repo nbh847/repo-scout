@@ -1,8 +1,11 @@
-import { ArrowLeft, ExternalLink, Flame, GitFork, Star, TrendingUp } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, Flame, GitFork, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import {
+  type ApiFeaturedCollection,
   type ApiRepository,
   buildCollectionHref,
+  buildRelatedCollectionProjects,
+  buildRepositoryHref,
   buildRepositoryViewModel,
   formatTrendDelta,
 } from "../../../repository-view-models";
@@ -54,6 +57,28 @@ async function fetchRepositoryDetail(
   }
 }
 
+async function fetchFeaturedCollection(
+  slug: string,
+): Promise<{ data: ApiFeaturedCollection | null; error: string | null }> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2000);
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/featured/${encodeURIComponent(slug)}`, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      return { data: null, error: `API returned ${response.status}` };
+    }
+    return { data: (await response.json()) as ApiFeaturedCollection, error: null };
+  } catch {
+    return { data: null, error: "API is not reachable" };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function scoreLabel(value: number | null): string {
   return value ? `${value}/5` : "未精选";
 }
@@ -85,6 +110,10 @@ export default async function RepositoryDetailPage({ params }: RepositoryDetailP
   const collectionHref = result.data.featured_collection_slug
     ? buildCollectionHref(result.data.featured_collection_slug)
     : null;
+  const collectionResult = result.data.featured_collection_slug
+    ? await fetchFeaturedCollection(result.data.featured_collection_slug)
+    : { data: null };
+  const relatedProjects = buildRelatedCollectionProjects(collectionResult.data, repository.fullName);
 
   return (
     <main className="min-h-screen bg-[#111325] px-4 py-6 text-ink sm:px-5 md:px-10 md:py-8">
@@ -130,6 +159,31 @@ export default async function RepositoryDetailPage({ params }: RepositoryDetailP
               ) : null}
               <p className="mt-4 text-sm font-semibold leading-7 text-muted sm:text-base md:leading-8">{reason}</p>
             </section>
+
+            {relatedProjects.length > 0 ? (
+              <section className="mt-6 rounded-lg border border-[#254a76] bg-[#172b50]/90 p-5 shadow-terminal md:mt-8 md:p-6">
+                <h2 className="text-xl font-black text-ink sm:text-2xl">同专题更多项目</h2>
+                <div className="mt-4 grid gap-3">
+                  {relatedProjects.map((project) => (
+                    <Link
+                      key={project.repo}
+                      href={buildRepositoryHref(project.repo)}
+                      className="rounded-lg border border-[#244169] bg-[#10213d] p-4 hover:border-cyan/50"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="break-words text-sm font-black text-ink">{project.repo}</h3>
+                        <span className="shrink-0 font-mono text-xs font-black text-amber">{project.score}</span>
+                      </div>
+                      <p className="mt-2 line-clamp-2 text-sm font-semibold leading-6 text-muted">{project.reason}</p>
+                      <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-black text-cyan">
+                        查看项目
+                        <ArrowRight size={14} aria-hidden="true" />
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            ) : null}
           </div>
 
           <aside className="rounded-lg border border-[#254a76] bg-[#172b50]/90 p-5 shadow-terminal md:p-6">

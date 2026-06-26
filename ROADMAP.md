@@ -59,6 +59,7 @@
 - 首页关键词搜索支持叠加语言筛选，并将语言参数透传到后端 `/api/repositories/search`。
 - 项目详情页支持展示基于最近两条历史快照计算的 stars 趋势变化。
 - 项目详情页支持展示所属精选专题，并可跳转回专题页。
+- 项目详情页支持展示同专题更多项目，帮助从单个仓库继续浏览相关精选。
 - 首页项目卡片和项目详情页展示仓库 topics 标签，缺少 topics 时沿用语言标签兜底。
 - 增加精选专题页 `/collections/[slug]`，展示专题说明、入选项目、理由和评分。
 - AI 精选生成支持新手友好、AI Agent、LLM 工具和开发工具四类专题。
@@ -201,3 +202,4 @@
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证首页卡片和项目详情页 topics 标签展示。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest apps/api/tests/test_github_trending.py`、`npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证动态语言筛选接口和首页接入。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest apps/api/tests/test_curation.py`、`npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证项目详情所属精选专题展示。
+- 2026-06-26：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证项目详情同专题更多项目展示。

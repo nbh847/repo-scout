@@ -48,6 +48,12 @@ export type FeaturedProjectViewModel = {
   score: string;
 };
 
+export type RelatedProjectViewModel = {
+  repo: string;
+  reason: string;
+  score: string;
+};
+
 export type MetricViewModel = {
   label: string;
   value: string;
@@ -170,4 +176,23 @@ export function buildFeaturedProjects(collections: ApiFeaturedCollection[] | nul
       },
     ];
   });
+}
+
+export function buildRelatedCollectionProjects(
+  collection: ApiFeaturedCollection | null,
+  currentFullName: string,
+  limit = 3,
+): RelatedProjectViewModel[] {
+  if (!collection) {
+    return [];
+  }
+
+  return collection.repositories
+    .filter((repository) => repository.full_name !== currentFullName)
+    .slice(0, limit)
+    .map((repository) => ({
+      repo: repository.full_name,
+      reason: repository.reason,
+      score: ((repository.beginner_score + repository.learning_value_score) / 2).toFixed(1),
+    }));
 }

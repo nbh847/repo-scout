@@ -35,6 +35,7 @@ const {
   buildRepositoryLanguagesApiPath,
   buildCollectionHref,
   buildFeaturedProjects,
+  buildRelatedCollectionProjects,
   buildRepositoryHref,
   buildRepositoryViewModel,
   buildMetrics,
@@ -147,6 +148,48 @@ assert.deepEqual(
       repo: "example/llm-tool",
       reason: "LLM tool pick.",
       score: "3.5",
+    },
+  ],
+);
+assert.deepEqual(
+  normalize(
+    buildRelatedCollectionProjects(
+      {
+        slug: "ai-agent-projects",
+        title: "AI Agent 项目",
+        repositories: [
+          {
+            ...repository,
+            full_name: "openai/agents",
+            reason: "Current project.",
+            beginner_score: 4,
+            learning_value_score: 5,
+          },
+          {
+            ...repository,
+            full_name: "openai/second-agent",
+            reason: "Second pick.",
+            beginner_score: 5,
+            learning_value_score: 5,
+          },
+          {
+            ...repository,
+            full_name: "openai/third-agent",
+            reason: "Third pick.",
+            beginner_score: 3,
+            learning_value_score: 4,
+          },
+        ],
+      },
+      "openai/agents",
+      1,
+    ),
+  ),
+  [
+    {
+      repo: "openai/second-agent",
+      reason: "Second pick.",
+      score: "5.0",
     },
   ],
 );

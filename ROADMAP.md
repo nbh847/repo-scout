@@ -55,6 +55,7 @@
 - 已按功能边界提交 MVP 真实数据闭环、AI 精选、前端详情页、本地演示脚本和发布准备文档。
 - 首页支持按 GitHub Trending 周期筛选 `daily`、`weekly`、`monthly`。
 - 首页支持按语言筛选 Trending 数据，并将筛选参数透传到后端 `/api/repositories/trending`。
+- 首页语言筛选支持从后端 `/api/repositories/languages` 读取已入库语言，并在接口不可用时回退默认语言。
 - 首页关键词搜索支持叠加语言筛选，并将语言参数透传到后端 `/api/repositories/search`。
 - 项目详情页支持展示基于最近两条历史快照计算的 stars 趋势变化。
 - 首页项目卡片和项目详情页展示仓库 topics 标签，缺少 topics 时沿用语言标签兜底。
@@ -197,3 +198,4 @@
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证首页右侧精选专题 Top pick 展示。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest apps/api/tests/test_curation.py` 验证 OpenAI-compatible 模型精选理由、模型失败回退模板和现有精选流程。
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证首页卡片和项目详情页 topics 标签展示。
+- 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest apps/api/tests/test_github_trending.py`、`npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证动态语言筛选接口和首页接入。

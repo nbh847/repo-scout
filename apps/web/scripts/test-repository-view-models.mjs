@@ -32,6 +32,7 @@ const sandbox = {
 vm.runInNewContext(compiled.outputText, sandbox, { filename: sourcePath });
 const {
   buildRepositoryApiPath,
+  buildRepositoryLanguagesApiPath,
   buildCollectionHref,
   buildFeaturedProjects,
   buildRepositoryHref,
@@ -162,6 +163,7 @@ assert.equal(
   buildRepositoryApiPath({ query: "agent", period: "monthly", language: "Go" }),
   "/api/repositories/search?q=agent&limit=20&language=Go",
 );
+assert.equal(buildRepositoryLanguagesApiPath(), "/api/repositories/languages");
 assert.equal(formatTrendDelta(55), "+55");
 assert.equal(formatTrendDelta(0), "0");
 assert.equal(formatTrendDelta(null), "暂无历史");

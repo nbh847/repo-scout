@@ -21,7 +21,12 @@ from app.github_trending import (
     parse_trending_html,
     resolve_ca_file,
 )
-from app.main import search_repositories, trigger_github_trending_ingest, trending_repositories
+from app.main import (
+    repository_languages,
+    search_repositories,
+    trigger_github_trending_ingest,
+    trending_repositories,
+)
 from app.models import Repository, RepositorySnapshot, TrendingRun
 from app.scheduler import TrendingIngestionScheduler, trending_ingestion_lock
 
@@ -376,6 +381,58 @@ class GitHubTrendingIngestionTest(unittest.TestCase):
             repositories = search_repositories(q="agent", language="Python", limit=10, db=db)
 
         self.assertEqual([repository.full_name for repository in repositories], ["python-owner/agent-kit"])
+
+    def test_repository_languages_returns_distinct_languages_by_repository_count(self) -> None:
+        with Session(self.engine) as db:
+            db.add_all(
+                [
+                    Repository(
+                        owner="python-owner",
+                        name="one",
+                        full_name="python-owner/one",
+                        url="https://github.com/python-owner/one",
+                        description=None,
+                        primary_language="Python",
+                        stars=100,
+                        forks=10,
+                    ),
+                    Repository(
+                        owner="python-owner",
+                        name="two",
+                        full_name="python-owner/two",
+                        url="https://github.com/python-owner/two",
+                        description=None,
+                        primary_language="Python",
+                        stars=90,
+                        forks=9,
+                    ),
+                    Repository(
+                        owner="go-owner",
+                        name="tool",
+                        full_name="go-owner/tool",
+                        url="https://github.com/go-owner/tool",
+                        description=None,
+                        primary_language="Go",
+                        stars=80,
+                        forks=8,
+                    ),
+                    Repository(
+                        owner="unknown-owner",
+                        name="tool",
+                        full_name="unknown-owner/tool",
+                        url="https://github.com/unknown-owner/tool",
+                        description=None,
+                        primary_language=None,
+                        stars=70,
+                        forks=7,
+                    ),
+                ]
+            )
+            db.commit()
+
+            languages = repository_languages(db=db)
+
+        self.assertEqual(languages, ["Python", "Go"])
 
 
 class GitHubTrendingAdminEndpointTest(unittest.TestCase):

@@ -59,6 +59,10 @@ export type RepositoryApiPathOptions = {
   language: string;
 };
 
+export function buildRepositoryLanguagesApiPath(): string {
+  return "/api/repositories/languages";
+}
+
 export function buildRepositoryApiPath(options: RepositoryApiPathOptions): string {
   const query = options.query.trim();
   if (query) {

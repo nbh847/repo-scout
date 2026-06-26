@@ -16,6 +16,7 @@ import {
   buildCollectionHref,
   buildFeaturedProjects,
   buildRepositoryApiPath,
+  buildRepositoryLanguagesApiPath,
   buildRepositoryHref,
   buildMetrics,
   buildRepositoryViewModel,
@@ -42,7 +43,7 @@ const periodFilters = [
   { label: "周榜", value: "weekly" },
   { label: "月榜", value: "monthly" },
 ];
-const languageFilters = ["全部", "Python", "TypeScript", "Go", "Rust", "JavaScript"];
+const fallbackLanguageFilters = ["Python", "TypeScript", "Go", "Rust", "JavaScript"];
 const scoreRows = [
   { label: "热度", color: "bg-orange-400", value: 8.8 },
   { label: "增长", color: "bg-cyan", value: 8.4 },
@@ -86,9 +87,9 @@ function readPeriod(searchParams?: SearchParams): string {
   return periodFilters.some((filter) => filter.value === period) ? period : "daily";
 }
 
-function readLanguage(searchParams?: SearchParams): string {
+function readLanguage(searchParams: SearchParams | undefined, languageFilters: string[]): string {
   const language = readSingleParam(searchParams?.language);
-  return languageFilters.includes(language) && language !== "全部" ? language : "";
+  return languageFilters.includes(language) ? language : "";
 }
 
 function buildHomeFilterHref(period: string, language: string): string {
@@ -117,7 +118,9 @@ export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
   const query = readSearchQuery(params);
   const period = readPeriod(params);
-  const language = readLanguage(params);
+  const languageResult = await fetchApi<string[]>(buildRepositoryLanguagesApiPath());
+  const languageFilters = languageResult.data?.length ? languageResult.data : fallbackLanguageFilters;
+  const language = readLanguage(params, languageFilters);
   const [repositoryResult, featuredResult] = await Promise.all([
     fetchApi<ApiRepository[]>(buildRepositoryApiPath({ query, period, language })),
     fetchApi<ApiFeaturedCollection[]>("/api/featured"),
@@ -232,7 +235,7 @@ export default async function Home({ searchParams }: HomeProps) {
               </div>
 
               <div className="flex gap-3 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
-                {languageFilters.map((filter, index) => (
+                {["全部", ...languageFilters].map((filter, index) => (
                   <Link
                     key={filter}
                     href={buildHomeFilterHref(period, index === 0 ? "" : filter)}

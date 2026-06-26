@@ -215,6 +215,17 @@ def search_repositories(
     return [repository_out(repository) for repository in db.scalars(query)]
 
 
+@app.get("/api/repositories/languages", response_model=list[str])
+def repository_languages(db: Session = Depends(get_db)) -> list[str]:
+    rows = db.execute(
+        select(Repository.primary_language, func.count(Repository.id))
+        .where(Repository.primary_language.is_not(None), Repository.primary_language != "")
+        .group_by(Repository.primary_language)
+        .order_by(desc(func.count(Repository.id)), Repository.primary_language.asc())
+    ).all()
+    return [language for language, _count in rows]
+
+
 @app.get("/api/repositories/{owner}/{name}", response_model=RepositoryDetailOut)
 def get_repository(owner: str, name: str, db: Session = Depends(get_db)) -> RepositoryDetailOut:
     repository = db.scalar(

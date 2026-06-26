@@ -156,6 +156,50 @@ class CurationTest(unittest.TestCase):
         self.assertGreaterEqual(result.beginner_score, 4)
         self.assertGreaterEqual(result.learning_value_score, 4)
 
+    def test_repository_detail_includes_star_trend_between_latest_snapshots(self) -> None:
+        with Session(self.engine) as db:
+            ingest_trending_repositories(
+                db,
+                [
+                    TrendingRepository(
+                        rank=1,
+                        owner="trend-owner",
+                        name="trend-project",
+                        url="https://github.com/trend-owner/trend-project",
+                        description="Trend test repository.",
+                        primary_language="Python",
+                        stars=100,
+                        forks=10,
+                        stars_gained=5,
+                    )
+                ],
+                period="daily",
+                language=None,
+            )
+            ingest_trending_repositories(
+                db,
+                [
+                    TrendingRepository(
+                        rank=1,
+                        owner="trend-owner",
+                        name="trend-project",
+                        url="https://github.com/trend-owner/trend-project",
+                        description="Trend test repository.",
+                        primary_language="Python",
+                        stars=155,
+                        forks=12,
+                        stars_gained=20,
+                    )
+                ],
+                period="daily",
+                language=None,
+            )
+
+            result = get_repository(owner="trend-owner", name="trend-project", db=db)
+
+        self.assertEqual(result.trend_delta_stars, 55)
+        self.assertEqual(result.trend_snapshot_count, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

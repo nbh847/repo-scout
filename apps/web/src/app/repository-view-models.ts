@@ -62,6 +62,16 @@ export function buildRepositoryHref(fullName: string): string {
   return `/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(name)}`;
 }
 
+export function formatTrendDelta(value: number | null): string {
+  if (value === null) {
+    return "暂无历史";
+  }
+  if (value > 0) {
+    return `+${value}`;
+  }
+  return String(value);
+}
+
 function formatCount(value: number): string {
   if (value < 1000) {
     return String(value);

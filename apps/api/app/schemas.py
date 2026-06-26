@@ -24,6 +24,8 @@ class RepositoryDetailOut(RepositoryOut):
     featured_reason: str | None = None
     beginner_score: int | None = None
     learning_value_score: int | None = None
+    trend_delta_stars: int | None = None
+    trend_snapshot_count: int = 0
 
 
 class FeaturedRepositoryOut(RepositoryOut):

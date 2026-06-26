@@ -1,8 +1,9 @@
-import { ArrowLeft, ExternalLink, Flame, GitFork, Star } from "lucide-react";
+import { ArrowLeft, ExternalLink, Flame, GitFork, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import {
   type ApiRepository,
   buildRepositoryViewModel,
+  formatTrendDelta,
 } from "../../../repository-view-models";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,8 @@ type RepositoryDetail = ApiRepository & {
   featured_reason: string | null;
   beginner_score: number | null;
   learning_value_score: number | null;
+  trend_delta_stars: number | null;
+  trend_snapshot_count: number;
 };
 
 type RepositoryDetailPageProps = {
@@ -125,6 +128,13 @@ export default async function RepositoryDetailPage({ params }: RepositoryDetailP
               <div className="flex items-center justify-between">
                 <span>近期增长</span>
                 <span className="font-mono text-orange-400">{repository.gained}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <TrendingUp size={16} className="text-emerald-400" aria-hidden="true" />
+                  历史趋势
+                </span>
+                <span className="font-mono text-emerald-400">{formatTrendDelta(result.data.trend_delta_stars)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>入门友好</span>

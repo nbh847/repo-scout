@@ -236,9 +236,22 @@ def get_repository(owner: str, name: str, db: Session = Depends(get_db)) -> Repo
             "beginner_score": featured.beginner_score,
             "learning_value_score": featured.learning_value_score,
         }
+    snapshots = db.scalars(
+        select(RepositorySnapshot)
+        .join(TrendingRun, TrendingRun.id == RepositorySnapshot.trending_run_id)
+        .where(RepositorySnapshot.repository_id == repository.id)
+        .order_by(desc(TrendingRun.finished_at), desc(TrendingRun.id), desc(RepositorySnapshot.id))
+        .limit(2)
+    ).all()
+    trend_delta_stars = None
+    if len(snapshots) >= 2:
+        trend_delta_stars = snapshots[0].stars - snapshots[1].stars
+
     return RepositoryDetailOut(
         **repository_out(repository).model_dump(),
         **featured_data,
+        trend_delta_stars=trend_delta_stars,
+        trend_snapshot_count=len(snapshots),
     )
 
 

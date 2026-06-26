@@ -25,7 +25,13 @@ const sandbox = {
 };
 
 vm.runInNewContext(compiled.outputText, sandbox, { filename: sourcePath });
-const { buildRepositoryApiPath, buildRepositoryHref, buildRepositoryViewModel, buildMetrics } = sandbox.module.exports;
+const {
+  buildRepositoryApiPath,
+  buildRepositoryHref,
+  buildRepositoryViewModel,
+  buildMetrics,
+  formatTrendDelta,
+} = sandbox.module.exports;
 const normalize = (value) => JSON.parse(JSON.stringify(value));
 
 const repository = buildRepositoryViewModel({
@@ -91,3 +97,6 @@ assert.equal(
   buildRepositoryApiPath({ query: "agent", period: "monthly", language: "Go" }),
   "/api/repositories/search?q=agent&limit=20",
 );
+assert.equal(formatTrendDelta(55), "+55");
+assert.equal(formatTrendDelta(0), "0");
+assert.equal(formatTrendDelta(null), "暂无历史");

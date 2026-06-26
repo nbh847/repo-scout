@@ -77,7 +77,7 @@ MVP 不做完整个性化推荐，不读取用户行为，也不要求项目 REA
 
 - `GET /api/repositories/trending`：获取热门项目榜单，支持 `period` 和 `language` 查询参数，读取匹配条件下最新一次成功抓取 run。
 - `GET /api/repositories/search`：关键词搜索。
-- `GET /api/repositories/:owner/:name`：获取项目详情；如果项目已进入精选专题，同时返回入选理由和评分。
+- `GET /api/repositories/:owner/:name`：获取项目详情；如果项目已进入精选专题，同时返回入选理由和评分；如果存在历史快照，同时返回最近两次快照的 stars 趋势差值。
 - `GET /api/featured`：获取 AI 精选专题。
 - `POST /api/admin/ingest/trending`：本地或管理员手动触发抓取。
 - `POST /api/admin/curate`：本地或管理员手动触发 AI 精选生成。

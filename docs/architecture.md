@@ -92,7 +92,7 @@ MVP 不做完整个性化推荐，不读取用户行为，也不要求项目 REA
 - token 从环境变量读取，不提交默认密钥。
 - MVP 不引入用户系统、角色权限或后台管理界面。
 
-`POST /api/admin/curate` 复用同一套 MVP 权限策略。它从最新成功的 GitHub Trending run 读取候选项目，使用规则评分生成 `beginner-friendly-ai` 和 `notable-developer-tools` 两个精选专题。缺少模型配置时，使用本地模板理由并将 `model_name` 写为 `local-template`。
+`POST /api/admin/curate` 复用同一套 MVP 权限策略。它从最新成功的 GitHub Trending run 读取候选项目，使用规则评分生成 `beginner-friendly-ai`、`ai-agent-projects`、`llm-tools` 和 `notable-developer-tools` 精选专题。缺少模型配置时，使用本地模板理由并将 `model_name` 写为 `local-template`。
 
 本地手动生成精选专题可运行：
 

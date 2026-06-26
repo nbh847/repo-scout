@@ -12,7 +12,7 @@ Repo Scout 当前适合进入本地演示版和单机自用版验收，不适合
 
 ## 已处理事项
 
-- 本地数据闭环：`npm run ingest:trending`、`npm run curate:featured` 和 `scripts/local-demo.sh` 可串起抓取、精选和页面展示。
+- 本地数据闭环：`npm run ingest:trending`、`npm run curate:featured` 和 `scripts/local-demo.sh` 可串起抓取、新手友好/AI Agent/LLM 工具/开发工具精选和页面展示。
 - 后端接口：健康检查、榜单、搜索、项目详情、精选专题、单专题详情、手动抓取和手动精选生成已实现。
 - 前端页面：首页、搜索筛选、周期/语言筛选、明星项目栏、项目详情页和精选专题页已实现，并完成移动端间距和长文本优化。
 - 项目信号：详情页已展示精选理由、评分和基于最近两条历史快照计算的 stars 趋势变化。

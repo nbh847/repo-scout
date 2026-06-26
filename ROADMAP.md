@@ -57,6 +57,7 @@
 - 首页关键词搜索支持叠加语言筛选，并将语言参数透传到后端 `/api/repositories/search`。
 - 项目详情页支持展示基于最近两条历史快照计算的 stars 趋势变化。
 - 增加精选专题页 `/collections/[slug]`，展示专题说明、入选项目、理由和评分。
+- AI 精选生成支持新手友好、AI Agent、LLM 工具和开发工具四类专题。
 - 增加本地发布前完整验证脚本 `scripts/validate-local-release.sh`，按安全顺序运行后端、前端、构建、脚本和 diff 检查。
 - 补齐本地发布前完整验证脚本的自检覆盖，确保脚本测试、脚本语法检查和关键命令顺序被自动验证。
 - 同步发布就绪摘要的验证基线，明确优先运行完整本地发布验证脚本，并覆盖脚本自检。
@@ -188,3 +189,4 @@
 - 2026-06-26：已先确认 `scripts/test-validate-local-release.sh` 对本地数据跟踪检查缺口失败，再新增 `scripts/check-local-data-untracked.sh` 并接入完整本地发布验证。
 - 2026-06-26：已先确认 `scripts/test-validate-local-release.sh` 对敏感文件跟踪检查缺口失败，再新增 `scripts/check-sensitive-files-untracked.sh` 并接入完整本地发布验证。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest apps/api/tests/test_github_trending.py` 和 `npm run test:web` 验证关键词搜索叠加语言筛选。
+- 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest apps/api/tests/test_curation.py` 验证 AI Agent 和 LLM 工具精选专题生成。

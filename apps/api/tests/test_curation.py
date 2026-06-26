@@ -114,6 +114,8 @@ class CurationTest(unittest.TestCase):
 
         self.assertEqual([collection.slug for collection in collections], [
             "beginner-friendly-ai",
+            "ai-agent-projects",
+            "llm-tools",
             "notable-developer-tools",
         ])
         self.assertEqual(stored_collection.model_name, "local-template")
@@ -131,8 +133,8 @@ class CurationTest(unittest.TestCase):
             collections = db.scalars(select(FeaturedCollection)).all()
             featured_rows = db.scalars(select(FeaturedRepository)).all()
 
-        self.assertEqual(len(collections), 2)
-        self.assertEqual(len(featured_rows), 4)
+        self.assertEqual(len(collections), 4)
+        self.assertEqual(len(featured_rows), 8)
 
     def test_trigger_featured_curation_returns_api_output(self) -> None:
         with Session(self.engine) as db:

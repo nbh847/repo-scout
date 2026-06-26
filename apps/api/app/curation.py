@@ -35,6 +35,16 @@ DEVELOPER_TOOL_KEYWORDS = {
     "tool",
     "toolkit",
 }
+AGENT_KEYWORDS = {
+    "agent",
+    "agents",
+    "automation",
+    "tool calling",
+    "workflow",
+    "rag",
+    "retrieval",
+}
+LLM_TOOL_KEYWORDS = {"llm", "model", "models", "inference", "openai", "rag", "retrieval"}
 COMMON_LEARNING_LANGUAGES = {"Python", "TypeScript", "JavaScript", "Go", "Rust"}
 
 
@@ -72,6 +82,7 @@ class CollectionTarget:
     prompt: str
     minimum_ai_relevance: int = 1
     prefer_developer_tools: bool = False
+    required_keywords: frozenset[str] = frozenset()
 
 
 COLLECTION_TARGETS = [
@@ -81,6 +92,22 @@ COLLECTION_TARGETS = [
         description="从最新热门项目中挑选出定位清晰、学习价值明确的 AI 项目。",
         prompt="Select beginner-friendly AI repositories with clear learning value.",
         minimum_ai_relevance=3,
+    ),
+    CollectionTarget(
+        slug="ai-agent-projects",
+        title="AI Agent 项目",
+        description="聚焦 Agent、工具调用、检索增强和自动化工作流方向的热门项目。",
+        prompt="Select AI agent repositories focused on tool calling, retrieval, and automation workflows.",
+        minimum_ai_relevance=3,
+        required_keywords=frozenset(AGENT_KEYWORDS),
+    ),
+    CollectionTarget(
+        slug="llm-tools",
+        title="LLM 工具",
+        description="聚焦大模型推理、模型调用、RAG 和开发集成工具的热门项目。",
+        prompt="Select LLM tools for inference, RAG, model integration, and developer workflows.",
+        minimum_ai_relevance=3,
+        required_keywords=frozenset(LLM_TOOL_KEYWORDS),
     ),
     CollectionTarget(
         slug="notable-developer-tools",
@@ -196,9 +223,15 @@ def select_shortlist(
         for candidate in candidates
         if candidate.score.ai_relevance >= target.minimum_ai_relevance
     ]
+    if target.required_keywords:
+        filtered = [
+            candidate
+            for candidate in filtered
+            if count_keyword_hits(searchable_text(candidate.repository), set(target.required_keywords))
+        ]
     if target.prefer_developer_tools:
         filtered = sorted(
-            candidates,
+            filtered,
             key=lambda candidate: (
                 developer_tool_score(candidate.repository),
                 candidate.score.total,
@@ -240,6 +273,16 @@ def build_template_reason(candidate: CurationCandidate, target: CollectionTarget
         return (
             f"{repository.name} 是近期热度较高的开发工具项目，"
             f"适合观察工具型开源项目的设计取舍。"
+        )
+    if target.slug == "ai-agent-projects":
+        return (
+            f"{repository.name} 命中 Agent、检索或工具调用方向信号，"
+            f"适合观察 AI Agent 项目的工程组织方式。"
+        )
+    if target.slug == "llm-tools":
+        return (
+            f"{repository.name} 与 LLM、模型调用或 RAG 工具链相关，"
+            f"适合拆解大模型应用基础设施。"
         )
     return (
         f"{repository.name} 与 AI/LLM 方向相关，描述清晰，"

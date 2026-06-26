@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import {
   type ApiRepository,
+  buildCollectionHref,
   buildRepositoryApiPath,
   buildRepositoryHref,
   buildMetrics,
@@ -32,7 +33,9 @@ type HomeProps = {
 };
 
 type FeaturedCollection = {
+  slug: string;
   title: string;
+  description: string | null;
   repositories: Array<
     ApiRepository & {
       reason: string;
@@ -44,6 +47,7 @@ type FeaturedCollection = {
 
 type FeaturedProject = {
   title: string;
+  collectionSlug: string;
   repo: string;
   reason: string;
   score: string;
@@ -123,6 +127,7 @@ function buildFeaturedProjects(collections: FeaturedCollection[] | null): Featur
   return collections.flatMap((collection) =>
     collection.repositories.slice(0, 3).map((repository) => ({
       title: collection.title,
+      collectionSlug: collection.slug,
       repo: repository.full_name,
       reason: repository.reason,
       score: ((repository.beginner_score + repository.learning_value_score) / 2).toFixed(1),
@@ -162,11 +167,12 @@ export default async function Home({ searchParams }: HomeProps) {
   const starRepositories = repositories.slice(0, 4);
   const sidebarProjects =
     featuredProjects.length > 0
-      ? featuredProjects
-      : starRepositories.map((repository) => ({
-          title: "GitHub Trending",
-          repo: repository.fullName,
-          reason: repository.description,
+        ? featuredProjects
+        : starRepositories.map((repository) => ({
+            title: "GitHub Trending",
+            collectionSlug: "",
+            repo: repository.fullName,
+            reason: repository.description,
           score: repository.gained,
         }));
 
@@ -370,7 +376,16 @@ export default async function Home({ searchParams }: HomeProps) {
                   key={project.repo}
                   className="rounded-lg border border-[#254a76] bg-[#172b50]/90 p-5 shadow-terminal"
                 >
-                  <p className="text-xs font-bold text-cyan">{project.title}</p>
+                  {project.collectionSlug ? (
+                    <Link
+                      href={buildCollectionHref(project.collectionSlug)}
+                      className="text-xs font-bold text-cyan hover:text-ink"
+                    >
+                      {project.title}
+                    </Link>
+                  ) : (
+                    <p className="text-xs font-bold text-cyan">{project.title}</p>
+                  )}
                   <h3 className="mt-2 break-words text-lg font-black text-ink">{project.repo}</h3>
                   <p className="mt-3 line-clamp-3 text-sm font-semibold leading-6 text-muted">{project.reason}</p>
                   <div className="mt-4 flex items-center gap-2 text-sm font-bold text-muted">

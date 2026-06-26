@@ -258,34 +258,39 @@ def get_repository(owner: str, name: str, db: Session = Depends(get_db)) -> Repo
 @app.get("/api/featured", response_model=list[FeaturedCollectionOut])
 def featured_collections(db: Session = Depends(get_db)) -> list[FeaturedCollectionOut]:
     collections = db.scalars(select(FeaturedCollection).order_by(FeaturedCollection.created_at)).all()
-    result: list[FeaturedCollectionOut] = []
+    return [featured_collection_out(collection, db) for collection in collections]
 
-    for collection in collections:
-        rows = db.execute(
-            select(FeaturedRepository, Repository)
-            .join(Repository, Repository.id == FeaturedRepository.repository_id)
-            .where(FeaturedRepository.collection_id == collection.id)
-            .order_by(FeaturedRepository.rank.asc())
-        ).all()
-        result.append(
-            FeaturedCollectionOut(
-                slug=collection.slug,
-                title=collection.title,
-                description=collection.description,
-                repositories=[
-                    {
-                        **repository_out(repository).model_dump(),
-                        "rank": featured.rank,
-                        "reason": featured.reason,
-                        "beginner_score": featured.beginner_score,
-                        "learning_value_score": featured.learning_value_score,
-                    }
-                    for featured, repository in rows
-                ],
-            )
-        )
 
-    return result
+def featured_collection_out(collection: FeaturedCollection, db: Session) -> FeaturedCollectionOut:
+    rows = db.execute(
+        select(FeaturedRepository, Repository)
+        .join(Repository, Repository.id == FeaturedRepository.repository_id)
+        .where(FeaturedRepository.collection_id == collection.id)
+        .order_by(FeaturedRepository.rank.asc())
+    ).all()
+    return FeaturedCollectionOut(
+        slug=collection.slug,
+        title=collection.title,
+        description=collection.description,
+        repositories=[
+            {
+                **repository_out(repository).model_dump(),
+                "rank": featured.rank,
+                "reason": featured.reason,
+                "beginner_score": featured.beginner_score,
+                "learning_value_score": featured.learning_value_score,
+            }
+            for featured, repository in rows
+        ],
+    )
+
+
+@app.get("/api/featured/{slug}", response_model=FeaturedCollectionOut)
+def featured_collection(slug: str, db: Session = Depends(get_db)) -> FeaturedCollectionOut:
+    collection = db.scalar(select(FeaturedCollection).where(FeaturedCollection.slug == slug))
+    if collection is None:
+        raise HTTPException(status_code=404, detail="Featured collection not found")
+    return featured_collection_out(collection, db)
 
 
 @app.post("/api/admin/curate", response_model=list[FeaturedCollectionOut])

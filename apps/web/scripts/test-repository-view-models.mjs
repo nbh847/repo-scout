@@ -27,6 +27,7 @@ const sandbox = {
 vm.runInNewContext(compiled.outputText, sandbox, { filename: sourcePath });
 const {
   buildRepositoryApiPath,
+  buildCollectionHref,
   buildRepositoryHref,
   buildRepositoryViewModel,
   buildMetrics,
@@ -89,6 +90,8 @@ assert.deepEqual(normalize(buildMetrics([repository, fallbackRepository])), [
 
 assert.equal(buildRepositoryHref("openai/agents"), "/repositories/openai/agents");
 assert.equal(buildRepositoryHref("owner with space/project/name"), "/repositories/owner%20with%20space/project%2Fname");
+assert.equal(buildCollectionHref("beginner-friendly-ai"), "/collections/beginner-friendly-ai");
+assert.equal(buildCollectionHref("AI Picks"), "/collections/AI%20Picks");
 assert.equal(
   buildRepositoryApiPath({ query: "", period: "weekly", language: "Python" }),
   "/api/repositories/trending?limit=20&period=weekly&language=Python",

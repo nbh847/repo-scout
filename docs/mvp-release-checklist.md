@@ -17,6 +17,7 @@ npm run ingest:trending -- --period weekly --language Python --limit 20
 - 支持本地或 admin token 保护的手动抓取接口 `POST /api/admin/ingest/trending`。
 - 支持应用内轻量定时抓取，通过 `REPO_SCOUT_TRENDING_SCHEDULER_ENABLED=1` 启用。
 - 支持规则评分生成 AI 精选专题，缺少模型配置时使用本地模板理由。
+- 支持精选专题页 `/collections/[slug]`，展示专题说明、入选项目、理由和评分。
 - 支持手动生成精选专题命令：
 
 ```bash

@@ -13,7 +13,7 @@ from app.curation import (
 )
 from app.database import Base
 from app.github_trending import TrendingRepository, ingest_trending_repositories
-from app.main import featured_collections, get_repository, trigger_featured_curation
+from app.main import featured_collection, featured_collections, get_repository, trigger_featured_curation
 from app.models import FeaturedCollection, FeaturedRepository, Repository
 
 
@@ -144,6 +144,16 @@ class CurationTest(unittest.TestCase):
 
         self.assertEqual(result[0].slug, "beginner-friendly-ai")
         self.assertEqual(result[0].repositories[0].full_name, "ai-owner/agent-kit")
+
+    def test_featured_collection_returns_one_collection_by_slug(self) -> None:
+        with Session(self.engine) as db:
+            self.seed_trending(db)
+            curate_featured_collections(db, limit=2)
+
+            result = featured_collection(slug="beginner-friendly-ai", db=db)
+
+        self.assertEqual(result.slug, "beginner-friendly-ai")
+        self.assertEqual(result.repositories[0].full_name, "ai-owner/agent-kit")
 
     def test_repository_detail_includes_featured_reason_when_curated(self) -> None:
         with Session(self.engine) as db:

@@ -2,6 +2,7 @@ import { ArrowLeft, ExternalLink, Flame, GitFork, Star, TrendingUp } from "lucid
 import Link from "next/link";
 import {
   type ApiRepository,
+  buildCollectionHref,
   buildRepositoryViewModel,
   formatTrendDelta,
 } from "../../../repository-view-models";
@@ -10,6 +11,8 @@ export const dynamic = "force-dynamic";
 
 type RepositoryDetail = ApiRepository & {
   featured_reason: string | null;
+  featured_collection_slug: string | null;
+  featured_collection_title: string | null;
   beginner_score: number | null;
   learning_value_score: number | null;
   trend_delta_stars: number | null;
@@ -79,6 +82,9 @@ export default async function RepositoryDetailPage({ params }: RepositoryDetailP
   const reason =
     result.data.featured_reason ??
     "这个项目已经进入 Repo Scout 跟踪列表，可结合语言、热度和增长信号判断是否适合继续研究。";
+  const collectionHref = result.data.featured_collection_slug
+    ? buildCollectionHref(result.data.featured_collection_slug)
+    : null;
 
   return (
     <main className="min-h-screen bg-[#111325] px-4 py-6 text-ink sm:px-5 md:px-10 md:py-8">
@@ -114,6 +120,14 @@ export default async function RepositoryDetailPage({ params }: RepositoryDetailP
                 <Flame className="text-orange-400" size={22} aria-hidden="true" />
                 <h2 className="text-xl font-black text-ink sm:text-2xl">为什么值得关注</h2>
               </div>
+              {collectionHref && result.data.featured_collection_title ? (
+                <Link
+                  href={collectionHref}
+                  className="mt-3 inline-flex rounded-full border border-cyan/30 bg-cyan/10 px-3 py-1 text-xs font-black text-cyan hover:text-ink"
+                >
+                  {result.data.featured_collection_title}
+                </Link>
+              ) : null}
               <p className="mt-4 text-sm font-semibold leading-7 text-muted sm:text-base md:leading-8">{reason}</p>
             </section>
           </div>

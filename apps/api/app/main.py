@@ -233,16 +233,20 @@ def get_repository(owner: str, name: str, db: Session = Depends(get_db)) -> Repo
     )
     if repository is None:
         raise HTTPException(status_code=404, detail="Repository not found")
-    featured = db.scalar(
-        select(FeaturedRepository)
+    featured_row = db.execute(
+        select(FeaturedRepository, FeaturedCollection)
+        .join(FeaturedCollection, FeaturedCollection.id == FeaturedRepository.collection_id)
         .where(FeaturedRepository.repository_id == repository.id)
         .order_by(FeaturedRepository.rank.asc(), FeaturedRepository.id.asc())
         .limit(1)
-    )
+    ).first()
     featured_data = {}
-    if featured is not None:
+    if featured_row is not None:
+        featured, collection = featured_row
         featured_data = {
             "featured_reason": featured.reason,
+            "featured_collection_slug": collection.slug,
+            "featured_collection_title": collection.title,
             "beginner_score": featured.beginner_score,
             "learning_value_score": featured.learning_value_score,
         }

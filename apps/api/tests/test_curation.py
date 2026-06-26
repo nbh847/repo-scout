@@ -246,6 +246,8 @@ class CurationTest(unittest.TestCase):
             result = get_repository(owner="ai-owner", name="agent-kit", db=db)
 
         self.assertIn("agent-kit", result.featured_reason)
+        self.assertEqual(result.featured_collection_slug, "beginner-friendly-ai")
+        self.assertEqual(result.featured_collection_title, "适合初学者的 AI 项目")
         self.assertGreaterEqual(result.beginner_score, 4)
         self.assertGreaterEqual(result.learning_value_score, 4)
 

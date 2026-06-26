@@ -22,6 +22,8 @@ class TrendingRepositoryOut(RepositoryOut):
 
 class RepositoryDetailOut(RepositoryOut):
     featured_reason: str | None = None
+    featured_collection_slug: str | None = None
+    featured_collection_title: str | None = None
     beginner_score: int | None = None
     learning_value_score: int | None = None
     trend_delta_stars: int | None = None

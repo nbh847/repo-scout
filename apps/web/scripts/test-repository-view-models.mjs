@@ -169,3 +169,5 @@ assert.equal(formatTrendDelta(0), "0");
 assert.equal(formatTrendDelta(null), "暂无历史");
 assert.match(homePageSource, /repository\.tags\.map/);
 assert.match(detailPageSource, /repository\.tags\.map/);
+assert.match(detailPageSource, /featured_collection_slug/);
+assert.match(detailPageSource, /buildCollectionHref/);

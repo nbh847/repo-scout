@@ -2,6 +2,16 @@
 
 ## 2026-06-26：Next.js 内部 PostCSS 漏洞
 
+### 最新复查
+
+2026-06-26 再次运行：
+
+- `npm audit --omit=dev`
+- `npm view next version`
+- `npm view next@16.2.9 dependencies.postcss engines peerDependencies version`
+
+结果仍未变化：当前稳定 Next 仍为 `16.2.9`，其内部 `dependencies.postcss` 仍为 `8.4.31`，`npm audit --omit=dev` 仍报告 `next 9.3.4-canary.0 - 16.3.0-canary.5` 依赖 vulnerable PostCSS。`npm audit fix --force` 仍会安装 `next@9.3.3`，不采用。
+
 ### 现象
 
 `npm audit --omit=dev` 仍报告 2 个 moderate 漏洞：

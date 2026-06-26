@@ -6,15 +6,16 @@ Repo Scout 当前适合进入本地演示版和单机自用版验收，不适合
 
 原因：
 
-- MVP 核心产品闭环已经跑通：首页浏览、搜索、项目详情、GitHub Trending 抓取、AI 精选生成、本地演示脚本和运行验收记录均已具备。
+- MVP 核心产品闭环已经跑通：首页浏览、搜索、周期/语言筛选、项目详情、精选专题页、GitHub Trending 抓取、AI 精选生成、本地演示脚本和运行验收记录均已具备。
 - 当前设计明确限定为本地或单机部署，数据库仍为 SQLite。
 - 仍存在 Next.js 内部 `postcss@8.4.31` 的 moderate audit 风险，尚无合适的非破坏性修复路径。
 
 ## 已处理事项
 
 - 本地数据闭环：`npm run ingest:trending`、`npm run curate:featured` 和 `scripts/local-demo.sh` 可串起抓取、精选和页面展示。
-- 后端接口：健康检查、榜单、搜索、项目详情、精选专题、手动抓取和手动精选生成已实现。
-- 前端页面：首页、搜索筛选、明星项目栏和项目详情页已实现，并完成移动端间距和长文本优化。
+- 后端接口：健康检查、榜单、搜索、项目详情、精选专题、单专题详情、手动抓取和手动精选生成已实现。
+- 前端页面：首页、搜索筛选、周期/语言筛选、明星项目栏、项目详情页和精选专题页已实现，并完成移动端间距和长文本优化。
+- 项目信号：详情页已展示精选理由、评分和基于最近两条历史快照计算的 stars 趋势变化。
 - 权限边界：admin 能力默认允许本地调用，非本地调用需要 `REPO_SCOUT_ADMIN_TOKEN`。
 - 并发边界：定时抓取和手动抓取共享进程内锁，避免同进程内并发写 SQLite。
 - 文档闭环：README、MVP 范围、架构、数据模型、运行验收、MVP 发布检查和依赖风险记录已补齐。
@@ -49,6 +50,7 @@ scripts/local-demo.sh --real --period daily --limit 20
 
 ```bash
 apps/api/.venv/bin/python -m unittest discover apps/api/tests
+apps/api/.venv/bin/python -W error::ResourceWarning -m unittest discover apps/api/tests
 apps/api/.venv/bin/python -m compileall apps/api/app
 npm run test:web
 npm run lint:web

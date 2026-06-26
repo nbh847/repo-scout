@@ -59,6 +59,7 @@
 - 增加本地发布前完整验证脚本 `scripts/validate-local-release.sh`，按安全顺序运行后端、前端、构建、脚本和 diff 检查。
 - 补齐本地发布前完整验证脚本的自检覆盖，确保脚本测试、脚本语法检查和关键命令顺序被自动验证。
 - 同步发布就绪摘要的验证基线，明确优先运行完整本地发布验证脚本，并覆盖脚本自检。
+- 同步英文 README 的项目阶段、文档入口、本地演示和完整本地发布验证说明。
 
 ## 进行中
 
@@ -180,3 +181,4 @@
 - 2026-06-26：已通过 `scripts/validate-local-release.sh` 完成本地发布前完整验证，覆盖后端严格 warning 测试、编译、前端测试、lint、typecheck、build、脚本文档检查和 `git diff --check`。
 - 2026-06-26：已先确认 `scripts/test-validate-local-release.sh` 对当前脚本缺口失败，再补齐 `scripts/validate-local-release.sh` 的脚本自检和语法检查，并通过 `scripts/test-validate-local-release.sh`、`bash -n scripts/validate-local-release.sh`、`bash -n scripts/test-validate-local-release.sh` 和 `scripts/validate-local-release.sh` 验证。
 - 2026-06-26：已先确认 `scripts/test-mvp-release-checklist.sh` 对发布就绪摘要验证基线缺口失败，再同步 `docs/release-readiness.md`，并通过 `scripts/test-mvp-release-checklist.sh`、`scripts/test-validate-local-release.sh` 和 `git diff --check` 验证。
+- 2026-06-26：已修复文档自检脚本中失败断言不可靠的问题，先确认 `scripts/test-mvp-release-checklist.sh` 能捕捉英文 README 缺口，再同步 `README.en.md`，并通过文档脚本验证。

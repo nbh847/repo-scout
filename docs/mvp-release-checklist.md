@@ -2,7 +2,7 @@
 
 ## 当前 MVP 能力
 
-- 首页展示 GitHub Trending 项目榜单，默认读取最新一次成功抓取 run。
+- 首页展示 GitHub Trending 项目榜单，默认读取最新一次成功抓取 run，并支持按 `daily`、`weekly`、`monthly` 和语言筛选匹配 run。
 - 支持关键词搜索，覆盖仓库名、描述、语言和 topics。
 - 支持项目详情页 `/repositories/[owner]/[name]`，展示仓库核心信息、GitHub 链接、精选理由和规则评分。
 - 支持 GitHub Trending 抓取，覆盖 `daily`、`weekly`、`monthly` 和可选语言过滤。
@@ -10,6 +10,7 @@
 
 ```bash
 npm run ingest:trending -- --period daily --limit 20
+npm run ingest:trending -- --period weekly --language Python --limit 20
 ```
 
 - 支持本地或 admin token 保护的手动抓取接口 `POST /api/admin/ingest/trending`。
@@ -26,6 +27,7 @@ npm run curate:featured -- --limit 5
 
 ```bash
 scripts/local-demo.sh --real --period daily --limit 20
+scripts/local-demo.sh --real --period weekly --language Python --limit 20
 scripts/local-demo.sh --sample
 ```
 

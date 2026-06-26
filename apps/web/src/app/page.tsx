@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import {
   type ApiRepository,
+  buildRepositoryApiPath,
   buildRepositoryHref,
   buildMetrics,
   buildRepositoryViewModel,
@@ -22,6 +23,8 @@ export const dynamic = "force-dynamic";
 
 type SearchParams = {
   q?: string | string[];
+  period?: string | string[];
+  language?: string | string[];
 };
 
 type HomeProps = {
@@ -49,7 +52,12 @@ type FeaturedProject = {
 const apiBaseUrl = process.env.REPO_SCOUT_API_URL ?? "http://127.0.0.1:8000";
 
 const intentFilters = ["全部项目", "好玩", "好用"];
-const languageFilters = ["全部", "Python", "TypeScript", "Go", "Swift", "LLM Tools"];
+const periodFilters = [
+  { label: "日榜", value: "daily" },
+  { label: "周榜", value: "weekly" },
+  { label: "月榜", value: "monthly" },
+];
+const languageFilters = ["全部", "Python", "TypeScript", "Go", "Rust", "JavaScript"];
 const scoreRows = [
   { label: "热度", color: "bg-orange-400", value: 8.8 },
   { label: "增长", color: "bg-cyan", value: 8.4 },
@@ -77,19 +85,34 @@ async function fetchApi<T>(path: string): Promise<{ data: T | null; error: strin
   }
 }
 
-function readSearchQuery(searchParams?: SearchParams): string {
-  const value = searchParams?.q;
+function readSingleParam(value?: string | string[]): string {
   if (Array.isArray(value)) {
     return value[0]?.trim() ?? "";
   }
   return value?.trim() ?? "";
 }
 
-function buildRepositoryPath(query: string): string {
-  if (!query) {
-    return "/api/repositories/trending?limit=20";
+function readSearchQuery(searchParams?: SearchParams): string {
+  return readSingleParam(searchParams?.q);
+}
+
+function readPeriod(searchParams?: SearchParams): string {
+  const period = readSingleParam(searchParams?.period);
+  return periodFilters.some((filter) => filter.value === period) ? period : "daily";
+}
+
+function readLanguage(searchParams?: SearchParams): string {
+  const language = readSingleParam(searchParams?.language);
+  return languageFilters.includes(language) && language !== "全部" ? language : "";
+}
+
+function buildHomeFilterHref(period: string, language: string): string {
+  const params = new URLSearchParams();
+  params.set("period", period);
+  if (language) {
+    params.set("language", language);
   }
-  return `/api/repositories/search?q=${encodeURIComponent(query)}&limit=20`;
+  return `/?${params.toString()}#ranking`;
 }
 
 function buildFeaturedProjects(collections: FeaturedCollection[] | null): FeaturedProject[] {
@@ -123,8 +146,10 @@ function scoreWidth(value: number): string {
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
   const query = readSearchQuery(params);
+  const period = readPeriod(params);
+  const language = readLanguage(params);
   const [repositoryResult, featuredResult] = await Promise.all([
-    fetchApi<ApiRepository[]>(buildRepositoryPath(query)),
+    fetchApi<ApiRepository[]>(buildRepositoryApiPath({ query, period, language })),
     fetchApi<FeaturedCollection[]>("/api/featured"),
   ]);
   const repositories: RepositoryViewModel[] = (repositoryResult.data ?? []).map((repository, index) =>
@@ -207,6 +232,8 @@ export default async function Home({ searchParams }: HomeProps) {
                     className="w-full bg-transparent text-base font-semibold text-ink outline-none placeholder:text-muted"
                     placeholder="搜索项目名称或技术..."
                   />
+                  <input type="hidden" name="period" value={period} />
+                  {language ? <input type="hidden" name="language" value={language} /> : null}
                 </label>
                 <div className="flex min-h-14 items-center justify-between rounded-lg border border-[#244169] bg-[#10213d]/90 px-5 text-sm font-bold text-muted shadow-terminal">
                   <span>排序</span>
@@ -218,12 +245,28 @@ export default async function Home({ searchParams }: HomeProps) {
               </div>
 
               <div className="flex gap-3 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+                {periodFilters.map((filter) => (
+                  <Link
+                    key={filter.value}
+                    href={buildHomeFilterHref(filter.value, language)}
+                    className={`inline-flex h-10 min-w-[70px] shrink-0 items-center justify-center rounded-full border px-4 text-sm font-bold transition ${
+                      period === filter.value
+                        ? "border-orange-500 bg-orange-500 text-white"
+                        : "border-[#244169] bg-[#10213d]/80 text-muted hover:text-ink"
+                    }`}
+                  >
+                    {filter.label}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="flex gap-3 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
                 {languageFilters.map((filter, index) => (
                   <Link
                     key={filter}
-                    href={index === 0 ? "/#ranking" : `/?q=${encodeURIComponent(filter)}#ranking`}
+                    href={buildHomeFilterHref(period, index === 0 ? "" : filter)}
                     className={`inline-flex h-10 min-w-[74px] shrink-0 items-center justify-center rounded-full border px-4 text-sm font-bold transition ${
-                      (index === 0 && !query) || query === filter
+                      (index === 0 && !language) || language === filter
                         ? "border-orange-500 bg-orange-500 text-white"
                         : "border-[#244169] bg-[#10213d]/80 text-muted hover:text-ink"
                     }`}

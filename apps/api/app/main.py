@@ -3,7 +3,7 @@ import json
 import os
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
-from sqlalchemy import desc, or_, select
+from sqlalchemy import desc, func, or_, select
 from sqlalchemy.orm import Session
 
 from .database import Base, SessionLocal, engine, get_db
@@ -149,11 +149,24 @@ def trigger_github_trending_ingest(
 @app.get("/api/repositories/trending", response_model=list[TrendingRepositoryOut])
 def trending_repositories(
     limit: int = Query(default=20, ge=1, le=100),
+    period: str | None = None,
+    language: str | None = None,
     db: Session = Depends(get_db),
 ) -> list[TrendingRepositoryOut]:
+    if period is not None and period not in VALID_PERIODS:
+        raise HTTPException(status_code=422, detail=f"Unsupported GitHub Trending period: {period}")
+
+    run_query = select(TrendingRun).where(
+        TrendingRun.source == "github_trending",
+        TrendingRun.status == "success",
+    )
+    if period is not None:
+        run_query = run_query.where(TrendingRun.period == period)
+    if language and language.strip():
+        run_query = run_query.where(func.lower(TrendingRun.language) == language.strip().lower())
+
     latest_run = db.scalar(
-        select(TrendingRun)
-        .where(TrendingRun.source == "github_trending", TrendingRun.status == "success")
+        run_query
         .order_by(desc(TrendingRun.finished_at), desc(TrendingRun.id))
         .limit(1)
     )

@@ -21,10 +21,11 @@ const sandbox = {
   exports: module.exports,
   module,
   require,
+  URLSearchParams,
 };
 
 vm.runInNewContext(compiled.outputText, sandbox, { filename: sourcePath });
-const { buildRepositoryHref, buildRepositoryViewModel, buildMetrics } = sandbox.module.exports;
+const { buildRepositoryApiPath, buildRepositoryHref, buildRepositoryViewModel, buildMetrics } = sandbox.module.exports;
 const normalize = (value) => JSON.parse(JSON.stringify(value));
 
 const repository = buildRepositoryViewModel({
@@ -82,3 +83,11 @@ assert.deepEqual(normalize(buildMetrics([repository, fallbackRepository])), [
 
 assert.equal(buildRepositoryHref("openai/agents"), "/repositories/openai/agents");
 assert.equal(buildRepositoryHref("owner with space/project/name"), "/repositories/owner%20with%20space/project%2Fname");
+assert.equal(
+  buildRepositoryApiPath({ query: "", period: "weekly", language: "Python" }),
+  "/api/repositories/trending?limit=20&period=weekly&language=Python",
+);
+assert.equal(
+  buildRepositoryApiPath({ query: "agent", period: "monthly", language: "Go" }),
+  "/api/repositories/search?q=agent&limit=20",
+);

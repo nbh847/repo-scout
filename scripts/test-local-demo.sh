@@ -9,5 +9,7 @@ README_CONTENT="$(cat "$ROOT_DIR/README.md")"
 [[ "$HELP_OUTPUT" == *"--sample"* ]]
 [[ "$HELP_OUTPUT" == *"npm run curate:featured"* ]]
 [[ "$README_CONTENT" == *"scripts/local-demo.sh --real --period daily --limit 20"* ]]
+[[ "$README_CONTENT" == *"scripts/local-demo.sh --real --period weekly --language Python --limit 20"* ]]
 [[ "$README_CONTENT" == *"npm run ingest:trending -- --period daily --limit 20"* ]]
+[[ "$README_CONTENT" == *"npm run ingest:trending -- --period weekly --language Python --limit 20"* ]]
 [[ "$README_CONTENT" == *"npm run curate:featured -- --limit 5"* ]]

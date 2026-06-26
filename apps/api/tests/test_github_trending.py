@@ -274,6 +274,72 @@ class GitHubTrendingIngestionTest(unittest.TestCase):
         )
         self.assertEqual([repository.rank for repository in repositories], [1, 2])
 
+    def test_trending_repositories_filters_by_period_and_language(self) -> None:
+        with Session(self.engine) as db:
+            ingest_trending_repositories(
+                db,
+                [
+                    TrendingRepository(
+                        rank=1,
+                        owner="daily-owner",
+                        name="daily-project",
+                        url="https://github.com/daily-owner/daily-project",
+                        description="Daily repository.",
+                        primary_language="Python",
+                        stars=100,
+                        forks=10,
+                        stars_gained=5,
+                    )
+                ],
+                period="daily",
+                language="python",
+            )
+            ingest_trending_repositories(
+                db,
+                [
+                    TrendingRepository(
+                        rank=1,
+                        owner="weekly-owner",
+                        name="weekly-project",
+                        url="https://github.com/weekly-owner/weekly-project",
+                        description="Weekly repository.",
+                        primary_language="Python",
+                        stars=200,
+                        forks=20,
+                        stars_gained=15,
+                    )
+                ],
+                period="weekly",
+                language="python",
+            )
+            ingest_trending_repositories(
+                db,
+                [
+                    TrendingRepository(
+                        rank=1,
+                        owner="go-owner",
+                        name="go-project",
+                        url="https://github.com/go-owner/go-project",
+                        description="Go repository.",
+                        primary_language="Go",
+                        stars=300,
+                        forks=30,
+                        stars_gained=25,
+                    )
+                ],
+                period="weekly",
+                language="go",
+            )
+
+            repositories = trending_repositories(
+                limit=10,
+                period="weekly",
+                language="python",
+                db=db,
+            )
+
+        self.assertEqual([repository.full_name for repository in repositories], ["weekly-owner/weekly-project"])
+
 
 class GitHubTrendingAdminEndpointTest(unittest.TestCase):
     def setUp(self) -> None:

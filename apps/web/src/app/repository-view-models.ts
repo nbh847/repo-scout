@@ -32,6 +32,29 @@ export type MetricViewModel = {
   value: string;
 };
 
+export type RepositoryApiPathOptions = {
+  query: string;
+  period: string;
+  language: string;
+};
+
+export function buildRepositoryApiPath(options: RepositoryApiPathOptions): string {
+  const query = options.query.trim();
+  if (query) {
+    return `/api/repositories/search?q=${encodeURIComponent(query)}&limit=20`;
+  }
+
+  const params = new URLSearchParams();
+  params.set("limit", "20");
+  if (options.period) {
+    params.set("period", options.period);
+  }
+  if (options.language) {
+    params.set("language", options.language);
+  }
+  return `/api/repositories/trending?${params.toString()}`;
+}
+
 export function buildRepositoryHref(fullName: string): string {
   const separatorIndex = fullName.indexOf("/");
   const owner = separatorIndex >= 0 ? fullName.slice(0, separatorIndex) : fullName;

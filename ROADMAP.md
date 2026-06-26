@@ -52,10 +52,12 @@
 - 增加 MVP 发布就绪摘要 `docs/release-readiness.md`，明确当前适合本地演示/单机自用验收，不适合直接公开生产发布。
 - 修复前端 `typecheck` 单独运行依赖 `.next/types` 已存在的问题，改为先执行 `next typegen` 再运行 `tsc --noEmit`。
 - 已按功能边界提交 MVP 真实数据闭环、AI 精选、前端详情页、本地演示脚本和发布准备文档。
+- 首页支持按 GitHub Trending 周期筛选 `daily`、`weekly`、`monthly`。
+- 首页支持按语言筛选 Trending 数据，并将筛选参数透传到后端 `/api/repositories/trending`。
 
 ## 进行中
 
-- 产品增强版建设：补齐榜单语言和周期筛选。
+- 产品增强版建设：补齐项目趋势变化展示。
 
 ## 功能开发计划
 
@@ -108,9 +110,8 @@
 
 ## 下一步
 
-- 支持首页按 GitHub Trending 周期筛选 `daily`、`weekly`、`monthly`。
-- 支持首页按语言筛选 Trending 数据。
-- 验证筛选参数贯穿前端、API 和本地演示入口。
+- 基于历史 `repository_snapshots` 增加项目趋势变化展示。
+- 评估是否需要新增专题页；如不需要，优先保持首页和详情页闭环。
 
 ## 阻塞
 
@@ -165,3 +166,4 @@
 - 2026-06-26：已新增 `docs/release-readiness.md`，整理 MVP 当前发布就绪判断、已处理事项、剩余风险和交付前验证基线。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`scripts/test-mvp-release-checklist.sh`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck`、`npm run build:web` 和 `git diff --check` 做提交前完整验证；后端测试仍有 SQLite `ResourceWarning`，测试结果为通过。
 - 2026-06-26：已按功能边界提交 `dc9b4ae`、`de98763`、`ed6eec0` 三个提交，覆盖后端抓取/精选、前端真实数据/详情页、文档脚本/发布准备。
+- 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck`、`npm run build:web`、`scripts/test-local-demo.sh` 和 `scripts/test-mvp-release-checklist.sh` 验证首页 Trending 周期/语言筛选；后端测试仍有 SQLite `ResourceWarning`，测试结果为通过。

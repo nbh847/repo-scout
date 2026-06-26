@@ -29,8 +29,10 @@ scripts/test-local-demo.sh
 scripts/test-mvp-release-checklist.sh
 scripts/test-validate-local-release.sh
 scripts/check-local-data-untracked.sh
+scripts/check-sensitive-files-untracked.sh
 bash -n scripts/local-demo.sh
 bash -n scripts/check-local-data-untracked.sh
+bash -n scripts/check-sensitive-files-untracked.sh
 bash -n scripts/test-local-demo.sh
 bash -n scripts/test-mvp-release-checklist.sh
 bash -n scripts/validate-local-release.sh

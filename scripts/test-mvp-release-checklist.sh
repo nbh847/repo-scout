@@ -27,6 +27,7 @@ assert_contains "$DOC_CONTENT" "npm run ingest:trending -- --period daily --limi
 assert_contains "$DOC_CONTENT" "npm run curate:featured -- --limit 5" "docs/mvp-release-checklist.md"
 assert_contains "$DOC_CONTENT" "npm run build:web" "docs/mvp-release-checklist.md"
 assert_contains "$DOC_CONTENT" "scripts/check-local-data-untracked.sh" "docs/mvp-release-checklist.md"
+assert_contains "$DOC_CONTENT" "scripts/check-sensitive-files-untracked.sh" "docs/mvp-release-checklist.md"
 assert_contains "$README_CONTENT" "./docs/mvp-release-checklist.md" "README.md"
 assert_contains "$README_CONTENT" "./docs/dependency-risks.md" "README.md"
 assert_contains "$README_CONTENT" "./docs/release-readiness.md" "README.md"
@@ -45,3 +46,4 @@ assert_contains "$READINESS_CONTENT" "scripts/local-demo.sh --sample" "docs/rele
 assert_contains "$READINESS_CONTENT" "scripts/validate-local-release.sh" "docs/release-readiness.md"
 assert_contains "$READINESS_CONTENT" "scripts/test-validate-local-release.sh" "docs/release-readiness.md"
 assert_contains "$READINESS_CONTENT" "scripts/check-local-data-untracked.sh" "docs/release-readiness.md"
+assert_contains "$READINESS_CONTENT" "scripts/check-sensitive-files-untracked.sh" "docs/release-readiness.md"

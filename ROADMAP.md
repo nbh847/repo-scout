@@ -61,6 +61,7 @@
 - 同步发布就绪摘要的验证基线，明确优先运行完整本地发布验证脚本，并覆盖脚本自检。
 - 同步英文 README 的项目阶段、文档入口、本地演示和完整本地发布验证说明。
 - 增加本地运行数据未被 Git 跟踪的发布前检查，防止 SQLite 数据库文件进入版本控制。
+- 增加敏感文件未被 Git 跟踪的发布前检查，覆盖 `.env`、密钥和证书类文件。
 
 ## 进行中
 
@@ -184,3 +185,4 @@
 - 2026-06-26：已先确认 `scripts/test-mvp-release-checklist.sh` 对发布就绪摘要验证基线缺口失败，再同步 `docs/release-readiness.md`，并通过 `scripts/test-mvp-release-checklist.sh`、`scripts/test-validate-local-release.sh` 和 `git diff --check` 验证。
 - 2026-06-26：已修复文档自检脚本中失败断言不可靠的问题，先确认 `scripts/test-mvp-release-checklist.sh` 能捕捉英文 README 缺口，再同步 `README.en.md`，并通过文档脚本验证。
 - 2026-06-26：已先确认 `scripts/test-validate-local-release.sh` 对本地数据跟踪检查缺口失败，再新增 `scripts/check-local-data-untracked.sh` 并接入完整本地发布验证。
+- 2026-06-26：已先确认 `scripts/test-validate-local-release.sh` 对敏感文件跟踪检查缺口失败，再新增 `scripts/check-sensitive-files-untracked.sh` 并接入完整本地发布验证。

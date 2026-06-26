@@ -27,6 +27,27 @@ export type RepositoryViewModel = {
   fit: string;
 };
 
+export type ApiFeaturedRepository = ApiRepository & {
+  reason: string;
+  beginner_score: number;
+  learning_value_score: number;
+};
+
+export type ApiFeaturedCollection = {
+  slug: string;
+  title: string;
+  description?: string | null;
+  repositories: ApiFeaturedRepository[];
+};
+
+export type FeaturedProjectViewModel = {
+  title: string;
+  collectionSlug: string;
+  repo: string;
+  reason: string;
+  score: string;
+};
+
 export type MetricViewModel = {
   label: string;
   value: string;
@@ -122,4 +143,27 @@ export function buildMetrics(repositories: RepositoryViewModel[]): MetricViewMod
     { label: "Tracked repos", value: String(repositories.length) },
     { label: "Languages", value: String(languages.size) },
   ];
+}
+
+export function buildFeaturedProjects(collections: ApiFeaturedCollection[] | null): FeaturedProjectViewModel[] {
+  if (!collections) {
+    return [];
+  }
+
+  return collections.flatMap((collection) => {
+    const repository = collection.repositories[0];
+    if (!repository) {
+      return [];
+    }
+
+    return [
+      {
+        title: collection.title,
+        collectionSlug: collection.slug,
+        repo: repository.full_name,
+        reason: repository.reason,
+        score: ((repository.beginner_score + repository.learning_value_score) / 2).toFixed(1),
+      },
+    ];
+  });
 }

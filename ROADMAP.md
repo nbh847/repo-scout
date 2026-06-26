@@ -41,6 +41,7 @@
 - 添加 AI 精选生成能力，支持从最新 Trending run 规则评分生成精选专题和本地模板理由。
 - 添加手动触发 AI 精选生成的后端接口 `POST /api/admin/curate` 和本地命令 `npm run curate:featured -- --limit 5`。
 - 首页展示真实 AI 精选专题数据，右侧明星项目栏读取 `/api/featured`，并在 API 不可用时回退到 Trending 项目。
+- 首页右侧明星项目栏按精选专题展示每类 Top pick，避免多专题项目混排。
 - 添加项目详情页 `/repositories/[owner]/[name]`，展示仓库核心信息、GitHub 链接、精选理由和规则评分。
 - 扩展项目详情 API，精选项目会返回“为什么值得关注”的入选理由和学习评分。
 - 添加本地端到端演示脚本 `scripts/local-demo.sh`，支持真实 GitHub Trending 数据和无网络示例数据两种模式。
@@ -190,3 +191,4 @@
 - 2026-06-26：已先确认 `scripts/test-validate-local-release.sh` 对敏感文件跟踪检查缺口失败，再新增 `scripts/check-sensitive-files-untracked.sh` 并接入完整本地发布验证。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest apps/api/tests/test_github_trending.py` 和 `npm run test:web` 验证关键词搜索叠加语言筛选。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest apps/api/tests/test_curation.py` 验证 AI Agent 和 LLM 工具精选专题生成。
+- 2026-06-26：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证首页右侧精选专题 Top pick 展示。

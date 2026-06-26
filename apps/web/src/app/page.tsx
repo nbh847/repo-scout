@@ -12,7 +12,9 @@ import {
 import Link from "next/link";
 import {
   type ApiRepository,
+  type ApiFeaturedCollection,
   buildCollectionHref,
+  buildFeaturedProjects,
   buildRepositoryApiPath,
   buildRepositoryHref,
   buildMetrics,
@@ -30,27 +32,6 @@ type SearchParams = {
 
 type HomeProps = {
   searchParams?: Promise<SearchParams>;
-};
-
-type FeaturedCollection = {
-  slug: string;
-  title: string;
-  description: string | null;
-  repositories: Array<
-    ApiRepository & {
-      reason: string;
-      beginner_score: number;
-      learning_value_score: number;
-    }
-  >;
-};
-
-type FeaturedProject = {
-  title: string;
-  collectionSlug: string;
-  repo: string;
-  reason: string;
-  score: string;
 };
 
 const apiBaseUrl = process.env.REPO_SCOUT_API_URL ?? "http://127.0.0.1:8000";
@@ -119,22 +100,6 @@ function buildHomeFilterHref(period: string, language: string): string {
   return `/?${params.toString()}#ranking`;
 }
 
-function buildFeaturedProjects(collections: FeaturedCollection[] | null): FeaturedProject[] {
-  if (!collections) {
-    return [];
-  }
-
-  return collections.flatMap((collection) =>
-    collection.repositories.slice(0, 3).map((repository) => ({
-      title: collection.title,
-      collectionSlug: collection.slug,
-      repo: repository.full_name,
-      reason: repository.reason,
-      score: ((repository.beginner_score + repository.learning_value_score) / 2).toFixed(1),
-    })),
-  );
-}
-
 function metricValue(metrics: ReturnType<typeof buildMetrics>, label: string): string {
   return metrics.find((metric) => metric.label === label)?.value ?? "0";
 }
@@ -155,7 +120,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const language = readLanguage(params);
   const [repositoryResult, featuredResult] = await Promise.all([
     fetchApi<ApiRepository[]>(buildRepositoryApiPath({ query, period, language })),
-    fetchApi<FeaturedCollection[]>("/api/featured"),
+    fetchApi<ApiFeaturedCollection[]>("/api/featured"),
   ]);
   const repositories: RepositoryViewModel[] = (repositoryResult.data ?? []).map((repository, index) =>
     buildRepositoryViewModel(repository, index),

@@ -28,6 +28,7 @@ vm.runInNewContext(compiled.outputText, sandbox, { filename: sourcePath });
 const {
   buildRepositoryApiPath,
   buildCollectionHref,
+  buildFeaturedProjects,
   buildRepositoryHref,
   buildRepositoryViewModel,
   buildMetrics,
@@ -87,6 +88,62 @@ assert.deepEqual(normalize(buildMetrics([repository, fallbackRepository])), [
   { label: "Tracked repos", value: "2" },
   { label: "Languages", value: "2" },
 ]);
+
+assert.deepEqual(
+  normalize(
+    buildFeaturedProjects([
+      {
+        slug: "ai-agent-projects",
+        title: "AI Agent 项目",
+        repositories: [
+          {
+            ...repository,
+            full_name: "openai/agents",
+            reason: "Agent workflow pick.",
+            beginner_score: 4,
+            learning_value_score: 5,
+          },
+          {
+            ...repository,
+            full_name: "openai/second-agent",
+            reason: "Second pick.",
+            beginner_score: 5,
+            learning_value_score: 5,
+          },
+        ],
+      },
+      {
+        slug: "llm-tools",
+        title: "LLM 工具",
+        repositories: [
+          {
+            ...fallbackRepository,
+            full_name: "example/llm-tool",
+            reason: "LLM tool pick.",
+            beginner_score: 3,
+            learning_value_score: 4,
+          },
+        ],
+      },
+    ]),
+  ),
+  [
+    {
+      title: "AI Agent 项目",
+      collectionSlug: "ai-agent-projects",
+      repo: "openai/agents",
+      reason: "Agent workflow pick.",
+      score: "4.5",
+    },
+    {
+      title: "LLM 工具",
+      collectionSlug: "llm-tools",
+      repo: "example/llm-tool",
+      reason: "LLM tool pick.",
+      score: "3.5",
+    },
+  ],
+);
 
 assert.equal(buildRepositoryHref("openai/agents"), "/repositories/openai/agents");
 assert.equal(buildRepositoryHref("owner with space/project/name"), "/repositories/owner%20with%20space/project%2Fname");

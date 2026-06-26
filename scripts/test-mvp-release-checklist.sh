@@ -23,4 +23,5 @@ READINESS_CONTENT="$(cat "$ROOT_DIR/docs/release-readiness.md")"
 [[ "$RISK_CONTENT" == *"16.2.9"* ]]
 [[ "$READINESS_CONTENT" == *"不适合直接公开生产发布"* ]]
 [[ "$READINESS_CONTENT" == *"scripts/local-demo.sh --sample"* ]]
-[[ "$READINESS_CONTENT" == *"npm run build:web"* ]]
+[[ "$READINESS_CONTENT" == *"scripts/validate-local-release.sh"* ]]
+[[ "$READINESS_CONTENT" == *"scripts/test-validate-local-release.sh"* ]]

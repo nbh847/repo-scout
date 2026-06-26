@@ -46,7 +46,15 @@ scripts/local-demo.sh --real --period daily --limit 20
 
 ## 验证基线
 
-每次准备交付前至少运行：
+每次准备交付前优先运行完整本地发布验证：
+
+```bash
+scripts/validate-local-release.sh
+```
+
+该脚本会按顺序运行后端严格 warning 测试、后端编译、前端测试、lint、typecheck、build、本地演示脚本文档检查、MVP 发布清单检查、发布验证脚本自检、脚本语法检查和 `git diff --check`。
+
+如需拆分排查，可按相同顺序单独运行：
 
 ```bash
 apps/api/.venv/bin/python -m unittest discover apps/api/tests
@@ -58,4 +66,11 @@ npm --workspace apps/web run typecheck
 npm run build:web
 scripts/test-local-demo.sh
 scripts/test-mvp-release-checklist.sh
+scripts/test-validate-local-release.sh
+bash -n scripts/local-demo.sh
+bash -n scripts/test-local-demo.sh
+bash -n scripts/test-mvp-release-checklist.sh
+bash -n scripts/validate-local-release.sh
+bash -n scripts/test-validate-local-release.sh
+git diff --check
 ```

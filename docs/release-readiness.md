@@ -52,7 +52,7 @@ scripts/local-demo.sh --real --period daily --limit 20
 scripts/validate-local-release.sh
 ```
 
-该脚本会按顺序运行后端严格 warning 测试、后端编译、前端测试、lint、typecheck、build、本地演示脚本文档检查、MVP 发布清单检查、发布验证脚本自检、本地运行数据未被 Git 跟踪检查、敏感文件未被 Git 跟踪检查、脚本语法检查和 `git diff --check`。
+该脚本会按顺序运行后端严格 warning 测试、后端编译、前端测试、lint、typecheck、build、运行态页面验证、本地演示脚本文档检查、MVP 发布清单检查、运行态验证脚本自检、发布验证脚本自检、本地运行数据未被 Git 跟踪检查、敏感文件未被 Git 跟踪检查、脚本语法检查和 `git diff --check`。
 
 如需拆分排查，可按相同顺序单独运行：
 
@@ -64,16 +64,20 @@ npm run test:web
 npm run lint:web
 npm --workspace apps/web run typecheck
 npm run build:web
+scripts/validate-runtime.sh
 scripts/test-local-demo.sh
 scripts/test-mvp-release-checklist.sh
+scripts/test-runtime-validation.sh
 scripts/test-validate-local-release.sh
 scripts/check-local-data-untracked.sh
 scripts/check-sensitive-files-untracked.sh
 bash -n scripts/local-demo.sh
+bash -n scripts/validate-runtime.sh
 bash -n scripts/check-local-data-untracked.sh
 bash -n scripts/check-sensitive-files-untracked.sh
 bash -n scripts/test-local-demo.sh
 bash -n scripts/test-mvp-release-checklist.sh
+bash -n scripts/test-runtime-validation.sh
 bash -n scripts/validate-local-release.sh
 bash -n scripts/test-validate-local-release.sh
 git diff --check

@@ -56,6 +56,12 @@ scripts/local-demo.sh --sample
 scripts/validate-local-release.sh
 ```
 
+运行态页面验证：
+
+```bash
+scripts/validate-runtime.sh
+```
+
 后端验证：
 
 ```bash
@@ -71,6 +77,7 @@ npm run test:web
 npm run lint:web
 npm --workspace apps/web run typecheck
 npm run build:web
+scripts/validate-runtime.sh
 ```
 
 `typecheck` 和 `build:web` 都会读写 `.next/types`，不要并行执行。
@@ -80,14 +87,17 @@ npm run build:web
 ```bash
 scripts/test-local-demo.sh
 scripts/test-mvp-release-checklist.sh
+scripts/test-runtime-validation.sh
 scripts/test-validate-local-release.sh
 scripts/check-local-data-untracked.sh
 scripts/check-sensitive-files-untracked.sh
 bash -n scripts/local-demo.sh
+bash -n scripts/validate-runtime.sh
 bash -n scripts/check-local-data-untracked.sh
 bash -n scripts/check-sensitive-files-untracked.sh
 bash -n scripts/test-local-demo.sh
 bash -n scripts/test-mvp-release-checklist.sh
+bash -n scripts/test-runtime-validation.sh
 bash -n scripts/validate-local-release.sh
 bash -n scripts/test-validate-local-release.sh
 ```

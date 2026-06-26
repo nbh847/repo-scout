@@ -72,6 +72,7 @@
 - 同步英文 README 的项目阶段、文档入口、本地演示和完整本地发布验证说明。
 - 增加本地运行数据未被 Git 跟踪的发布前检查，防止 SQLite 数据库文件进入版本控制。
 - 增加敏感文件未被 Git 跟踪的发布前检查，覆盖 `.env`、密钥和证书类文件。
+- 增加网站运行态验收脚本，自动启动临时 API/Web 服务并检查首页、详情页、专题页、排序页和语言筛选页。
 
 ## 进行中
 
@@ -207,3 +208,4 @@
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证项目详情同专题更多项目展示。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest apps/api/tests/test_github_trending.py`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`scripts/test-mvp-release-checklist.sh`、`npm run test:web` 和本地 API `GET /api/repositories/trending?limit=5&period=daily&language=Python` 验证首页语言筛选改为基于最新全量 run 的仓库主语言过滤。
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和本地页面 `GET /?period=daily&sort=gained` 验证首页榜单排序切换。
+- 2026-06-26：已新增 `scripts/validate-runtime.sh` 和 `scripts/test-runtime-validation.sh`，接入 `scripts/validate-local-release.sh`，并通过运行态脚本验证临时 API/Web 服务、首页、详情页、专题页、排序页和语言筛选页。

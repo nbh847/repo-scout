@@ -65,6 +65,8 @@ npm --workspace apps/web run typecheck
 npm run build:web
 ```
 
+`typecheck` 和 `build:web` 都会读写 `.next/types`，不要并行执行。
+
 脚本文档验证：
 
 ```bash

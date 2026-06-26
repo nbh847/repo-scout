@@ -98,7 +98,7 @@ assert.equal(
 );
 assert.equal(
   buildRepositoryApiPath({ query: "agent", period: "monthly", language: "Go" }),
-  "/api/repositories/search?q=agent&limit=20",
+  "/api/repositories/search?q=agent&limit=20&language=Go",
 );
 assert.equal(formatTrendDelta(55), "+55");
 assert.equal(formatTrendDelta(0), "0");

@@ -54,6 +54,7 @@
 - 已按功能边界提交 MVP 真实数据闭环、AI 精选、前端详情页、本地演示脚本和发布准备文档。
 - 首页支持按 GitHub Trending 周期筛选 `daily`、`weekly`、`monthly`。
 - 首页支持按语言筛选 Trending 数据，并将筛选参数透传到后端 `/api/repositories/trending`。
+- 首页关键词搜索支持叠加语言筛选，并将语言参数透传到后端 `/api/repositories/search`。
 - 项目详情页支持展示基于最近两条历史快照计算的 stars 趋势变化。
 - 增加精选专题页 `/collections/[slug]`，展示专题说明、入选项目、理由和评分。
 - 增加本地发布前完整验证脚本 `scripts/validate-local-release.sh`，按安全顺序运行后端、前端、构建、脚本和 diff 检查。
@@ -186,3 +187,4 @@
 - 2026-06-26：已修复文档自检脚本中失败断言不可靠的问题，先确认 `scripts/test-mvp-release-checklist.sh` 能捕捉英文 README 缺口，再同步 `README.en.md`，并通过文档脚本验证。
 - 2026-06-26：已先确认 `scripts/test-validate-local-release.sh` 对本地数据跟踪检查缺口失败，再新增 `scripts/check-local-data-untracked.sh` 并接入完整本地发布验证。
 - 2026-06-26：已先确认 `scripts/test-validate-local-release.sh` 对敏感文件跟踪检查缺口失败，再新增 `scripts/check-sensitive-files-untracked.sh` 并接入完整本地发布验证。
+- 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest apps/api/tests/test_github_trending.py` 和 `npm run test:web` 验证关键词搜索叠加语言筛选。

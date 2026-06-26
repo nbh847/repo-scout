@@ -41,7 +41,13 @@ export type RepositoryApiPathOptions = {
 export function buildRepositoryApiPath(options: RepositoryApiPathOptions): string {
   const query = options.query.trim();
   if (query) {
-    return `/api/repositories/search?q=${encodeURIComponent(query)}&limit=20`;
+    const params = new URLSearchParams();
+    params.set("q", query);
+    params.set("limit", "20");
+    if (options.language) {
+      params.set("language", options.language);
+    }
+    return `/api/repositories/search?${params.toString()}`;
   }
 
   const params = new URLSearchParams();

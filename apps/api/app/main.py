@@ -194,25 +194,24 @@ def trending_repositories(
 @app.get("/api/repositories/search", response_model=list[RepositoryOut])
 def search_repositories(
     q: str = Query(default="", max_length=120),
+    language: str | None = Query(default=None, max_length=80),
     limit: int = Query(default=20, ge=1, le=100),
     db: Session = Depends(get_db),
 ) -> list[RepositoryOut]:
-    query = select(Repository).order_by(desc(Repository.stars)).limit(limit)
+    query = select(Repository)
     if q.strip():
         term = f"%{q.strip()}%"
-        query = (
-            select(Repository)
-            .where(
-                or_(
-                    Repository.full_name.like(term),
-                    Repository.description.like(term),
-                    Repository.primary_language.like(term),
-                    Repository.topics_json.like(term),
-                )
+        query = query.where(
+            or_(
+                Repository.full_name.like(term),
+                Repository.description.like(term),
+                Repository.primary_language.like(term),
+                Repository.topics_json.like(term),
             )
-            .order_by(desc(Repository.stars))
-            .limit(limit)
         )
+    if language and language.strip():
+        query = query.where(func.lower(Repository.primary_language) == language.strip().lower())
+    query = query.order_by(desc(Repository.stars)).limit(limit)
     return [repository_out(repository) for repository in db.scalars(query)]
 
 

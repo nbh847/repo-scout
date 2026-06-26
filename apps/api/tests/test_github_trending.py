@@ -21,7 +21,7 @@ from app.github_trending import (
     parse_trending_html,
     resolve_ca_file,
 )
-from app.main import trigger_github_trending_ingest, trending_repositories
+from app.main import search_repositories, trigger_github_trending_ingest, trending_repositories
 from app.models import Repository, RepositorySnapshot, TrendingRun
 from app.scheduler import TrendingIngestionScheduler, trending_ingestion_lock
 
@@ -342,6 +342,40 @@ class GitHubTrendingIngestionTest(unittest.TestCase):
             )
 
         self.assertEqual([repository.full_name for repository in repositories], ["weekly-owner/weekly-project"])
+
+    def test_search_repositories_filters_query_by_language(self) -> None:
+        with Session(self.engine) as db:
+            db.add_all(
+                [
+                    Repository(
+                        owner="python-owner",
+                        name="agent-kit",
+                        full_name="python-owner/agent-kit",
+                        url="https://github.com/python-owner/agent-kit",
+                        description="Agent framework.",
+                        primary_language="Python",
+                        topics_json='["agents"]',
+                        stars=200,
+                        forks=20,
+                    ),
+                    Repository(
+                        owner="go-owner",
+                        name="agent-kit",
+                        full_name="go-owner/agent-kit",
+                        url="https://github.com/go-owner/agent-kit",
+                        description="Agent framework.",
+                        primary_language="Go",
+                        topics_json='["agents"]',
+                        stars=300,
+                        forks=30,
+                    ),
+                ]
+            )
+            db.commit()
+
+            repositories = search_repositories(q="agent", language="Python", limit=10, db=db)
+
+        self.assertEqual([repository.full_name for repository in repositories], ["python-owner/agent-kit"])
 
 
 class GitHubTrendingAdminEndpointTest(unittest.TestCase):

@@ -83,7 +83,7 @@ MVP 不做完整个性化推荐，不读取用户行为，也不要求项目 REA
 - `POST /api/admin/ingest/trending`：本地或管理员手动触发抓取。
 - `POST /api/admin/curate`：本地或管理员手动触发 AI 精选生成。
 
-当前已实现前四个查询接口、`GET /health`、`POST /api/admin/ingest/trending` 和 `POST /api/admin/curate`。首页在没有关键词搜索时会把周期和语言筛选透传给 `/api/repositories/trending`；有关键词搜索时使用 `/api/repositories/search`，不混入 Trending 周期筛选。
+当前已实现前四个查询接口、`GET /health`、`POST /api/admin/ingest/trending` 和 `POST /api/admin/curate`。首页在没有关键词搜索时会把周期和语言筛选透传给 `/api/repositories/trending`；有关键词搜索时使用 `/api/repositories/search`，不混入 Trending 周期筛选，但会继续透传语言筛选。
 
 `POST /api/admin/ingest/trending` 的 MVP 权限策略：
 

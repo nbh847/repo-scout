@@ -27,4 +27,10 @@ npm --workspace apps/web run typecheck
 npm run build:web
 scripts/test-local-demo.sh
 scripts/test-mvp-release-checklist.sh
+scripts/test-validate-local-release.sh
+bash -n scripts/local-demo.sh
+bash -n scripts/test-local-demo.sh
+bash -n scripts/test-mvp-release-checklist.sh
+bash -n scripts/validate-local-release.sh
+bash -n scripts/test-validate-local-release.sh
 git diff --check

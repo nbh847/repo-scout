@@ -57,6 +57,7 @@
 - 项目详情页支持展示基于最近两条历史快照计算的 stars 趋势变化。
 - 增加精选专题页 `/collections/[slug]`，展示专题说明、入选项目、理由和评分。
 - 增加本地发布前完整验证脚本 `scripts/validate-local-release.sh`，按安全顺序运行后端、前端、构建、脚本和 diff 检查。
+- 补齐本地发布前完整验证脚本的自检覆盖，确保脚本测试、脚本语法检查和关键命令顺序被自动验证。
 
 ## 进行中
 
@@ -176,3 +177,4 @@
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest discover apps/api/tests` 验证测试内存 SQLite engine 已显式释放，不再出现 SQLite `ResourceWarning`。
 - 2026-06-26：已通过 `npm audit --omit=dev`、`npm view next version` 和 `npm view next@16.2.9 dependencies.postcss engines peerDependencies version` 复查 Next.js 内部 `postcss@8.4.31` 风险；当前稳定 Next `16.2.9` 仍未修复，已更新 `docs/dependency-risks.md`。
 - 2026-06-26：已通过 `scripts/validate-local-release.sh` 完成本地发布前完整验证，覆盖后端严格 warning 测试、编译、前端测试、lint、typecheck、build、脚本文档检查和 `git diff --check`。
+- 2026-06-26：已先确认 `scripts/test-validate-local-release.sh` 对当前脚本缺口失败，再补齐 `scripts/validate-local-release.sh` 的脚本自检和语法检查，并通过 `scripts/test-validate-local-release.sh`、`bash -n scripts/validate-local-release.sh`、`bash -n scripts/test-validate-local-release.sh` 和 `scripts/validate-local-release.sh` 验证。

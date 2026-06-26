@@ -16,7 +16,7 @@ npm run ingest:trending -- --period weekly --language Python --limit 20
 
 - 支持本地或 admin token 保护的手动抓取接口 `POST /api/admin/ingest/trending`。
 - 支持应用内轻量定时抓取，通过 `REPO_SCOUT_TRENDING_SCHEDULER_ENABLED=1` 启用。
-- 支持规则评分生成 AI 精选专题，包含新手友好、AI Agent、LLM 工具和开发工具方向；缺少模型配置时使用本地模板理由。
+- 支持规则评分生成 AI 精选专题，包含新手友好、AI Agent、LLM 工具和开发工具方向；缺少模型配置时使用本地模板理由，配置 `REPO_SCOUT_OPENAI_BASE_URL`、`REPO_SCOUT_OPENAI_API_KEY` 和 `REPO_SCOUT_OPENAI_MODEL` 后可调用 OpenAI-compatible 模型生成理由。
 - 支持精选专题页 `/collections/[slug]`，展示专题说明、入选项目、理由和评分。
 - 支持手动生成精选专题命令：
 
@@ -105,5 +105,5 @@ REPO_SCOUT_DATABASE_URL=sqlite:///:memory: npm run curate:featured -- --limit 2
 - `npm audit --omit=dev` 仍报告 Next.js 内部固定依赖 `postcss@8.4.31` 的 moderate 漏洞。项目已将直接依赖 `postcss` 升级到安全版本，并尝试使用 npm `overrides`，但 Next 嵌套依赖未被覆盖，需要跟进 Next.js 上游修复或更换到已修复版本。
 - 当前已确认 Next `16.2.9` 仍声明内部 `postcss@8.4.31`，`npm audit fix --force` 会回退到 `next@9.3.3`，不作为当前处理方案。细节见 [依赖风险记录](./dependency-risks.md)。
 - 当前数据库默认 SQLite，只适合本地或单机低并发写入，不支持多实例同时写入。
-- 当前 AI 精选默认是规则评分加本地模板理由；模型生成理由需要配置 OpenAI-compatible 环境变量后再启用。
+- 当前 AI 精选默认是规则评分加本地模板理由；模型生成理由已覆盖 mock 响应和失败回退测试，真实供应商路径需要配置 OpenAI-compatible 环境变量后再做运行验收。
 - 本轮运行验收没有真实截图，因为 in-app Browser 和 Playwright 均不可用；已用 API 响应和页面 HTML 记录替代证据。

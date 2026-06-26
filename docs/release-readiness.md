@@ -24,7 +24,7 @@ Repo Scout 当前适合进入本地演示版和单机自用版验收，不适合
 
 - Next.js 内部 `postcss@8.4.31` 漏洞仍由 `npm audit --omit=dev` 报告，细节见 [依赖风险记录](./dependency-risks.md)。
 - SQLite 仅适合本地或单机低并发写入，不适合多实例部署。
-- 当前 AI 精选默认使用本地模板理由，未验证真实模型生成路径。
+- AI 精选的模型理由路径已覆盖 mock 响应和失败回退测试；真实供应商运行验收需要在配置 `REPO_SCOUT_OPENAI_BASE_URL`、`REPO_SCOUT_OPENAI_API_KEY` 和 `REPO_SCOUT_OPENAI_MODEL` 后单独执行。
 - 浏览器截图验收未完成，当前仅有 API 响应和页面 HTML 运行证据，细节见 [运行验收记录](./runtime-acceptance.md)。
 
 ## 发布前必须确认

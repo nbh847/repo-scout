@@ -1,12 +1,15 @@
+import os
 import sys
 from pathlib import Path
 import unittest
+from unittest import mock
 
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from app import curation
 from app.curation import (
     curate_featured_collections,
     score_repository,
@@ -19,6 +22,17 @@ from app.models import FeaturedCollection, FeaturedRepository, Repository
 
 class CurationTest(unittest.TestCase):
     def setUp(self) -> None:
+        self.env_patcher = mock.patch.dict(
+            os.environ,
+            {
+                "REPO_SCOUT_OPENAI_BASE_URL": "",
+                "REPO_SCOUT_OPENAI_API_KEY": "",
+                "REPO_SCOUT_OPENAI_MODEL": "",
+            },
+            clear=False,
+        )
+        self.env_patcher.start()
+        self.addCleanup(self.env_patcher.stop)
         self.engine = create_engine("sqlite:///:memory:")
         Base.metadata.create_all(bind=self.engine)
 
@@ -135,6 +149,70 @@ class CurationTest(unittest.TestCase):
 
         self.assertEqual(len(collections), 4)
         self.assertEqual(len(featured_rows), 8)
+
+    def test_curate_featured_collections_uses_model_reason_when_configured(self) -> None:
+        model_reason = "agent-kit 适合用来观察 Agent 工具调用和检索增强的工程实现。"
+        env = {
+            "REPO_SCOUT_OPENAI_BASE_URL": "https://model.example/v1",
+            "REPO_SCOUT_OPENAI_API_KEY": "test-key",
+            "REPO_SCOUT_OPENAI_MODEL": "reason-model",
+        }
+
+        with mock.patch.dict(os.environ, env, clear=False):
+            with mock.patch.object(
+                curation,
+                "request_model_reason",
+                return_value=model_reason,
+            ) as request_reason:
+                with Session(self.engine) as db:
+                    self.seed_trending(db)
+
+                    curate_featured_collections(db, limit=1)
+                    stored_collection = db.scalar(
+                        select(FeaturedCollection).where(
+                            FeaturedCollection.slug == "beginner-friendly-ai"
+                        )
+                    )
+                    featured_row = db.scalar(
+                        select(FeaturedRepository).where(
+                            FeaturedRepository.collection_id == stored_collection.id
+                        )
+                    )
+
+        self.assertEqual(stored_collection.model_name, "reason-model")
+        self.assertEqual(featured_row.reason, model_reason)
+        request_reason.assert_called()
+
+    def test_curate_featured_collections_falls_back_to_template_when_model_fails(self) -> None:
+        env = {
+            "REPO_SCOUT_OPENAI_BASE_URL": "https://model.example/v1",
+            "REPO_SCOUT_OPENAI_API_KEY": "test-key",
+            "REPO_SCOUT_OPENAI_MODEL": "reason-model",
+        }
+
+        with mock.patch.dict(os.environ, env, clear=False):
+            with mock.patch.object(
+                curation,
+                "request_model_reason",
+                side_effect=RuntimeError("boom"),
+            ):
+                with Session(self.engine) as db:
+                    self.seed_trending(db)
+
+                    curate_featured_collections(db, limit=1)
+                    stored_collection = db.scalar(
+                        select(FeaturedCollection).where(
+                            FeaturedCollection.slug == "beginner-friendly-ai"
+                        )
+                    )
+                    featured_row = db.scalar(
+                        select(FeaturedRepository).where(
+                            FeaturedRepository.collection_id == stored_collection.id
+                        )
+                    )
+
+        self.assertEqual(stored_collection.model_name, "reason-model")
+        self.assertIn("agent-kit", featured_row.reason)
 
     def test_trigger_featured_curation_returns_api_output(self) -> None:
         with Session(self.engine) as db:

@@ -1,6 +1,8 @@
 import argparse
 from dataclasses import dataclass
 import json
+import os
+from urllib import request
 
 from sqlalchemy import delete, desc, select
 from sqlalchemy.orm import Session
@@ -46,6 +48,9 @@ AGENT_KEYWORDS = {
 }
 LLM_TOOL_KEYWORDS = {"llm", "model", "models", "inference", "openai", "rag", "retrieval"}
 COMMON_LEARNING_LANGUAGES = {"Python", "TypeScript", "JavaScript", "Go", "Rust"}
+OPENAI_BASE_URL_ENV = "REPO_SCOUT_OPENAI_BASE_URL"
+OPENAI_API_KEY_ENV = "REPO_SCOUT_OPENAI_API_KEY"
+OPENAI_MODEL_ENV = "REPO_SCOUT_OPENAI_MODEL"
 
 
 @dataclass(frozen=True)
@@ -83,6 +88,13 @@ class CollectionTarget:
     minimum_ai_relevance: int = 1
     prefer_developer_tools: bool = False
     required_keywords: frozenset[str] = frozenset()
+
+
+@dataclass(frozen=True)
+class ModelReasonConfig:
+    base_url: str
+    api_key: str
+    model: str
 
 
 COLLECTION_TARGETS = [
@@ -174,7 +186,7 @@ def curate_featured_collections(db: Session, limit: int = 5) -> list[FeaturedCol
                     collection_id=collection.id,
                     repository_id=candidate.repository.id,
                     rank=rank,
-                    reason=build_template_reason(candidate, target),
+                    reason=build_featured_reason(candidate, target),
                     beginner_score=candidate.score.beginner_friendliness,
                     learning_value_score=candidate.score.learning_value,
                 )
@@ -263,8 +275,86 @@ def upsert_collection(db: Session, target: CollectionTarget) -> FeaturedCollecti
     collection.title = target.title
     collection.description = target.description
     collection.curation_prompt = target.prompt
-    collection.model_name = "local-template"
+    collection.model_name = configured_model_name()
     return collection
+
+
+def build_featured_reason(candidate: CurationCandidate, target: CollectionTarget) -> str:
+    config = load_model_reason_config()
+    if config is None:
+        return build_template_reason(candidate, target)
+
+    try:
+        model_reason = request_model_reason(candidate, target, config)
+    except Exception:
+        return build_template_reason(candidate, target)
+
+    return model_reason or build_template_reason(candidate, target)
+
+
+def configured_model_name() -> str:
+    config = load_model_reason_config()
+    if config is None:
+        return "local-template"
+    return config.model
+
+
+def load_model_reason_config() -> ModelReasonConfig | None:
+    base_url = os.environ.get(OPENAI_BASE_URL_ENV, "").strip()
+    api_key = os.environ.get(OPENAI_API_KEY_ENV, "").strip()
+    model = os.environ.get(OPENAI_MODEL_ENV, "").strip()
+    if not base_url or not api_key or not model:
+        return None
+    return ModelReasonConfig(base_url=base_url.rstrip("/"), api_key=api_key, model=model)
+
+
+def request_model_reason(
+    candidate: CurationCandidate,
+    target: CollectionTarget,
+    config: ModelReasonConfig,
+) -> str:
+    repository = candidate.repository
+    payload = {
+        "model": config.model,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "你是 Repo Scout 的开源项目策展助手。"
+                    "请用中文写一句具体、克制的精选理由，不要营销化。"
+                ),
+            },
+            {
+                "role": "user",
+                "content": (
+                    f"集合目标：{target.prompt}\n"
+                    f"仓库：{repository.full_name}\n"
+                    f"描述：{repository.description or '无'}\n"
+                    f"语言：{repository.primary_language or '未知'}\n"
+                    f"Stars：{repository.stars}\n"
+                    f"Forks：{repository.forks}\n"
+                    f"评分：AI 相关 {candidate.score.ai_relevance}/5，"
+                    f"入门友好 {candidate.score.beginner_friendliness}/5，"
+                    f"学习价值 {candidate.score.learning_value}/5。"
+                ),
+            },
+        ],
+        "temperature": 0.2,
+        "max_tokens": 120,
+    }
+    http_request = request.Request(
+        f"{config.base_url}/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {config.api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    with request.urlopen(http_request, timeout=20) as response:
+        result = json.loads(response.read().decode("utf-8"))
+    content = result["choices"][0]["message"]["content"]
+    return str(content).strip()
 
 
 def build_template_reason(candidate: CurationCandidate, target: CollectionTarget) -> str:

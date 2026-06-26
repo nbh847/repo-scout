@@ -90,4 +90,4 @@ Run the complete local release validation before delivery:
 scripts/validate-local-release.sh
 ```
 
-The backend uses a local SQLite database by default. The database file is stored in `data/`, which is ignored by git. AI curation defaults to deterministic rule scoring and local template reasons unless model environment variables are configured.
+The backend uses a local SQLite database by default. The database file is stored in `data/`, which is ignored by git. AI curation defaults to deterministic rule scoring and local template reasons. When `REPO_SCOUT_OPENAI_BASE_URL`, `REPO_SCOUT_OPENAI_API_KEY`, and `REPO_SCOUT_OPENAI_MODEL` are configured together, Repo Scout calls an OpenAI-compatible `chat/completions` endpoint for featured reasons and falls back to local templates on model failures.

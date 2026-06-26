@@ -59,6 +59,7 @@
 - 项目详情页支持展示基于最近两条历史快照计算的 stars 趋势变化。
 - 增加精选专题页 `/collections/[slug]`，展示专题说明、入选项目、理由和评分。
 - AI 精选生成支持新手友好、AI Agent、LLM 工具和开发工具四类专题。
+- AI 精选支持在配置 `REPO_SCOUT_OPENAI_BASE_URL`、`REPO_SCOUT_OPENAI_API_KEY` 和 `REPO_SCOUT_OPENAI_MODEL` 后调用 OpenAI-compatible 模型生成精选理由，并在模型失败时回退本地模板。
 - 增加本地发布前完整验证脚本 `scripts/validate-local-release.sh`，按安全顺序运行后端、前端、构建、脚本和 diff 检查。
 - 补齐本地发布前完整验证脚本的自检覆盖，确保脚本测试、脚本语法检查和关键命令顺序被自动验证。
 - 同步发布就绪摘要的验证基线，明确优先运行完整本地发布验证脚本，并覆盖脚本自检。
@@ -122,6 +123,7 @@
 ## 下一步
 
 - 继续本地发布前硬化，不做远程部署。
+- 后续如需真实模型验收，配置 OpenAI-compatible 环境变量后运行精选生成命令并记录结果。
 - 未进入发布前，继续跟进 Next.js 内部 `postcss@8.4.31` 上游修复状态。
 - 后续本地交付优先运行 `scripts/validate-local-release.sh`，避免并行执行 `typecheck` 和 `build:web`。
 
@@ -192,3 +194,4 @@
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest apps/api/tests/test_github_trending.py` 和 `npm run test:web` 验证关键词搜索叠加语言筛选。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest apps/api/tests/test_curation.py` 验证 AI Agent 和 LLM 工具精选专题生成。
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证首页右侧精选专题 Top pick 展示。
+- 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest apps/api/tests/test_curation.py` 验证 OpenAI-compatible 模型精选理由、模型失败回退模板和现有精选流程。

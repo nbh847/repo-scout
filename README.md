@@ -90,4 +90,4 @@ npm run dev:web
 scripts/validate-local-release.sh
 ```
 
-后端默认使用本地 SQLite 数据库，文件会写入 `data/` 目录，该目录已被 `.gitignore` 忽略。AI 精选默认使用规则评分和本地模板理由；配置模型环境变量前不会调用外部 AI API。
+后端默认使用本地 SQLite 数据库，文件会写入 `data/` 目录，该目录已被 `.gitignore` 忽略。AI 精选默认使用规则评分和本地模板理由；同时配置 `REPO_SCOUT_OPENAI_BASE_URL`、`REPO_SCOUT_OPENAI_API_KEY` 和 `REPO_SCOUT_OPENAI_MODEL` 后，会调用 OpenAI-compatible `chat/completions` 接口生成精选理由，调用失败时自动回退到本地模板。

@@ -40,6 +40,7 @@ const {
   buildRepositoryViewModel,
   buildMetrics,
   formatTrendDelta,
+  sortRepositories,
 } = sandbox.module.exports;
 const normalize = (value) => JSON.parse(JSON.stringify(value));
 
@@ -210,7 +211,28 @@ assert.equal(buildRepositoryLanguagesApiPath(), "/api/repositories/languages");
 assert.equal(formatTrendDelta(55), "+55");
 assert.equal(formatTrendDelta(0), "0");
 assert.equal(formatTrendDelta(null), "暂无历史");
+const sortableRepositories = [
+  { ...repository, full_name: "owner/low-gain", rank: 1, stars: 500, stars_gained: 10 },
+  { ...repository, full_name: "owner/high-gain", rank: 2, stars: 400, stars_gained: 90 },
+  { ...repository, full_name: "owner/high-stars", rank: 3, stars: 900, stars_gained: 20 },
+];
+assert.deepEqual(normalize(sortRepositories(sortableRepositories, "ranking").map((item) => item.full_name)), [
+  "owner/low-gain",
+  "owner/high-gain",
+  "owner/high-stars",
+]);
+assert.deepEqual(normalize(sortRepositories(sortableRepositories, "stars").map((item) => item.full_name)), [
+  "owner/high-stars",
+  "owner/low-gain",
+  "owner/high-gain",
+]);
+assert.deepEqual(normalize(sortRepositories(sortableRepositories, "gained").map((item) => item.full_name)), [
+  "owner/high-gain",
+  "owner/high-stars",
+  "owner/low-gain",
+]);
 assert.match(homePageSource, /repository\.tags\.map/);
+assert.match(homePageSource, /sortRepositories/);
 assert.match(detailPageSource, /repository\.tags\.map/);
 assert.match(detailPageSource, /featured_collection_slug/);
 assert.match(detailPageSource, /buildCollectionHref/);

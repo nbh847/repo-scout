@@ -57,6 +57,7 @@
 - 首页支持按语言筛选 Trending 数据，并将筛选参数透传到后端 `/api/repositories/trending`。
 - 首页语言筛选支持从后端 `/api/repositories/languages` 读取已入库语言，并在接口不可用时回退默认语言。
 - 首页语言筛选改为优先基于最新全量 Trending run 内的仓库主语言过滤，避免没有语言专属抓取 run 时出现空结果。
+- 首页榜单支持按榜单排名、Stars 总量和新增 Stars 切换排序。
 - 首页关键词搜索支持叠加语言筛选，并将语言参数透传到后端 `/api/repositories/search`。
 - 项目详情页支持展示基于最近两条历史快照计算的 stars 趋势变化。
 - 项目详情页支持展示所属精选专题，并可跳转回专题页。
@@ -205,3 +206,4 @@
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest apps/api/tests/test_curation.py`、`npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证项目详情所属精选专题展示。
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证项目详情同专题更多项目展示。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest apps/api/tests/test_github_trending.py`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`scripts/test-mvp-release-checklist.sh`、`npm run test:web` 和本地 API `GET /api/repositories/trending?limit=5&period=daily&language=Python` 验证首页语言筛选改为基于最新全量 run 的仓库主语言过滤。
+- 2026-06-26：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和本地页面 `GET /?period=daily&sort=gained` 验证首页榜单排序切换。

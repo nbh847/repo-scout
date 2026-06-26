@@ -20,7 +20,9 @@ import {
   buildRepositoryHref,
   buildMetrics,
   buildRepositoryViewModel,
+  type RepositorySortMode,
   type RepositoryViewModel,
+  sortRepositories,
 } from "./repository-view-models";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +31,7 @@ type SearchParams = {
   q?: string | string[];
   period?: string | string[];
   language?: string | string[];
+  sort?: string | string[];
 };
 
 type HomeProps = {
@@ -42,6 +45,11 @@ const periodFilters = [
   { label: "日榜", value: "daily" },
   { label: "周榜", value: "weekly" },
   { label: "月榜", value: "monthly" },
+];
+const sortFilters: { label: string; value: RepositorySortMode }[] = [
+  { label: "榜单排名", value: "ranking" },
+  { label: "Stars", value: "stars" },
+  { label: "新增 Stars", value: "gained" },
 ];
 const fallbackLanguageFilters = ["Python", "TypeScript", "Go", "Rust", "JavaScript"];
 const scoreRows = [
@@ -92,11 +100,19 @@ function readLanguage(searchParams: SearchParams | undefined, languageFilters: s
   return languageFilters.includes(language) ? language : "";
 }
 
-function buildHomeFilterHref(period: string, language: string): string {
+function readSort(searchParams?: SearchParams): RepositorySortMode {
+  const sort = readSingleParam(searchParams?.sort);
+  return sortFilters.some((filter) => filter.value === sort) ? (sort as RepositorySortMode) : "ranking";
+}
+
+function buildHomeFilterHref(period: string, language: string, sort: RepositorySortMode): string {
   const params = new URLSearchParams();
   params.set("period", period);
   if (language) {
     params.set("language", language);
+  }
+  if (sort !== "ranking") {
+    params.set("sort", sort);
   }
   return `/?${params.toString()}#ranking`;
 }
@@ -121,13 +137,15 @@ export default async function Home({ searchParams }: HomeProps) {
   const languageResult = await fetchApi<string[]>(buildRepositoryLanguagesApiPath());
   const languageFilters = languageResult.data?.length ? languageResult.data : fallbackLanguageFilters;
   const language = readLanguage(params, languageFilters);
+  const sort = readSort(params);
   const [repositoryResult, featuredResult] = await Promise.all([
     fetchApi<ApiRepository[]>(buildRepositoryApiPath({ query, period, language })),
     fetchApi<ApiFeaturedCollection[]>("/api/featured"),
   ]);
-  const repositories: RepositoryViewModel[] = (repositoryResult.data ?? []).map((repository, index) =>
+  const repositories: RepositoryViewModel[] = sortRepositories(repositoryResult.data ?? [], sort).map((repository, index) =>
     buildRepositoryViewModel(repository, index),
   );
+  const activeSortLabel = sortFilters.find((filter) => filter.value === sort)?.label ?? "榜单排名";
   const featuredProjects = buildFeaturedProjects(featuredResult.data);
   const metrics = buildMetrics(repositories);
   const dataError = repositoryResult.error ?? featuredResult.error;
@@ -208,13 +226,31 @@ export default async function Home({ searchParams }: HomeProps) {
                   />
                   <input type="hidden" name="period" value={period} />
                   {language ? <input type="hidden" name="language" value={language} /> : null}
+                  {sort !== "ranking" ? <input type="hidden" name="sort" value={sort} /> : null}
                 </label>
-                <div className="flex min-h-14 items-center justify-between rounded-lg border border-[#244169] bg-[#10213d]/90 px-5 text-sm font-bold text-muted shadow-terminal">
-                  <span>排序</span>
-                  <span className="flex items-center gap-2 text-cyan">
-                    综合评分
-                    <SlidersHorizontal size={17} aria-hidden="true" />
-                  </span>
+                <div className="grid min-h-14 gap-3 rounded-lg border border-[#244169] bg-[#10213d]/90 px-4 py-3 text-sm font-bold text-muted shadow-terminal">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>排序</span>
+                    <span className="flex items-center gap-2 text-cyan">
+                      {activeSortLabel}
+                      <SlidersHorizontal size={17} aria-hidden="true" />
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {sortFilters.map((filter) => (
+                      <Link
+                        key={filter.value}
+                        href={buildHomeFilterHref(period, language, filter.value)}
+                        className={`inline-flex h-8 min-w-0 items-center justify-center rounded-md border px-2 text-xs font-black transition ${
+                          sort === filter.value
+                            ? "border-cyan bg-cyan/15 text-cyan"
+                            : "border-[#244169] bg-[#17213d] text-muted hover:text-ink"
+                        }`}
+                      >
+                        {filter.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -222,7 +258,7 @@ export default async function Home({ searchParams }: HomeProps) {
                 {periodFilters.map((filter) => (
                   <Link
                     key={filter.value}
-                    href={buildHomeFilterHref(filter.value, language)}
+                    href={buildHomeFilterHref(filter.value, language, sort)}
                     className={`inline-flex h-10 min-w-[70px] shrink-0 items-center justify-center rounded-full border px-4 text-sm font-bold transition ${
                       period === filter.value
                         ? "border-orange-500 bg-orange-500 text-white"
@@ -238,7 +274,7 @@ export default async function Home({ searchParams }: HomeProps) {
                 {["全部", ...languageFilters].map((filter, index) => (
                   <Link
                     key={filter}
-                    href={buildHomeFilterHref(period, index === 0 ? "" : filter)}
+                    href={buildHomeFilterHref(period, index === 0 ? "" : filter, sort)}
                     className={`inline-flex h-10 min-w-[74px] shrink-0 items-center justify-center rounded-full border px-4 text-sm font-bold transition ${
                       (index === 0 && !language) || language === filter
                         ? "border-orange-500 bg-orange-500 text-white"

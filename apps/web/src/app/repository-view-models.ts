@@ -65,6 +65,8 @@ export type RepositoryApiPathOptions = {
   language: string;
 };
 
+export type RepositorySortMode = "ranking" | "stars" | "gained";
+
 export function buildRepositoryLanguagesApiPath(): string {
   return "/api/repositories/languages";
 }
@@ -144,6 +146,26 @@ export function buildRepositoryViewModel(
     tags: topics.length > 0 ? topics : [language],
     fit: language === "Unknown" ? "General" : language,
   };
+}
+
+export function sortRepositories(
+  repositories: ApiRepository[],
+  sortMode: RepositorySortMode,
+): ApiRepository[] {
+  if (sortMode === "ranking") {
+    return [...repositories];
+  }
+
+  return [...repositories].sort((left, right) => {
+    const valueDiff =
+      sortMode === "stars"
+        ? right.stars - left.stars
+        : (right.stars_gained ?? 0) - (left.stars_gained ?? 0);
+    if (valueDiff !== 0) {
+      return valueDiff;
+    }
+    return (left.rank ?? 0) - (right.rank ?? 0);
+  });
 }
 
 export function buildMetrics(repositories: RepositoryViewModel[]): MetricViewModel[] {

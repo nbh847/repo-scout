@@ -56,6 +56,7 @@
 - 首页支持按语言筛选 Trending 数据，并将筛选参数透传到后端 `/api/repositories/trending`。
 - 项目详情页支持展示基于最近两条历史快照计算的 stars 趋势变化。
 - 增加精选专题页 `/collections/[slug]`，展示专题说明、入选项目、理由和评分。
+- 增加本地发布前完整验证脚本 `scripts/validate-local-release.sh`，按安全顺序运行后端、前端、构建、脚本和 diff 检查。
 
 ## 进行中
 
@@ -114,6 +115,7 @@
 
 - 继续本地发布前硬化，不做远程部署。
 - 未进入发布前，继续跟进 Next.js 内部 `postcss@8.4.31` 上游修复状态。
+- 后续本地交付优先运行 `scripts/validate-local-release.sh`，避免并行执行 `typecheck` 和 `build:web`。
 
 ## 阻塞
 
@@ -173,3 +175,4 @@
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck`、`npm run build:web`、`scripts/test-local-demo.sh`、`scripts/test-mvp-release-checklist.sh` 和 `git diff --check` 验证精选专题页 API、链接生成和页面路由。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest discover apps/api/tests` 验证测试内存 SQLite engine 已显式释放，不再出现 SQLite `ResourceWarning`。
 - 2026-06-26：已通过 `npm audit --omit=dev`、`npm view next version` 和 `npm view next@16.2.9 dependencies.postcss engines peerDependencies version` 复查 Next.js 内部 `postcss@8.4.31` 风险；当前稳定 Next `16.2.9` 仍未修复，已更新 `docs/dependency-risks.md`。
+- 2026-06-26：已通过 `scripts/validate-local-release.sh` 完成本地发布前完整验证，覆盖后端严格 warning 测试、编译、前端测试、lint、typecheck、build、脚本文档检查和 `git diff --check`。

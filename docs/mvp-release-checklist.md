@@ -49,10 +49,17 @@ scripts/local-demo.sh --sample
 
 ## 验证命令
 
+完整本地发布验证：
+
+```bash
+scripts/validate-local-release.sh
+```
+
 后端验证：
 
 ```bash
 apps/api/.venv/bin/python -m unittest discover apps/api/tests
+apps/api/.venv/bin/python -W error::ResourceWarning -m unittest discover apps/api/tests
 apps/api/.venv/bin/python -m compileall apps/api/app
 ```
 
@@ -72,9 +79,12 @@ npm run build:web
 ```bash
 scripts/test-local-demo.sh
 scripts/test-mvp-release-checklist.sh
+scripts/test-validate-local-release.sh
 bash -n scripts/local-demo.sh
 bash -n scripts/test-local-demo.sh
 bash -n scripts/test-mvp-release-checklist.sh
+bash -n scripts/validate-local-release.sh
+bash -n scripts/test-validate-local-release.sh
 ```
 
 本地命令入口验证：

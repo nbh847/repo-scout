@@ -84,4 +84,10 @@ npm run dev:api
 npm run dev:web
 ```
 
+本地发布前完整验证：
+
+```bash
+scripts/validate-local-release.sh
+```
+
 后端默认使用本地 SQLite 数据库，文件会写入 `data/` 目录，该目录已被 `.gitignore` 忽略。AI 精选默认使用规则评分和本地模板理由；配置模型环境变量前不会调用外部 AI API。

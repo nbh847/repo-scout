@@ -286,9 +286,16 @@ export default async function Home({ searchParams }: HomeProps) {
                   <p className="mt-4 line-clamp-3 min-h-[72px] text-sm font-semibold leading-6 text-muted">
                     {repository.description}
                   </p>
-                  <p className="mt-3 line-clamp-2 min-h-[44px] text-sm font-bold leading-6 text-muted">
-                    MVP: 拆解技术栈、增长信号和可学习模块。
-                  </p>
+                  <div className="mt-3 flex min-h-[32px] flex-wrap gap-2">
+                    {repository.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="max-w-full truncate rounded-full border border-[#315987] bg-[#10213d] px-3 py-1 text-xs font-black text-cyan"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
 
                   <div className="mt-5 grid gap-3">
                     {scoreRows.map((row, index) => {

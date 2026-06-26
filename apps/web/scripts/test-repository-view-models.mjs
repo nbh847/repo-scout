@@ -8,6 +8,11 @@ import ts from "typescript";
 const require = createRequire(import.meta.url);
 const sourcePath = path.resolve("src/app/repository-view-models.ts");
 const source = fs.readFileSync(sourcePath, "utf8");
+const homePageSource = fs.readFileSync(path.resolve("src/app/page.tsx"), "utf8");
+const detailPageSource = fs.readFileSync(
+  path.resolve("src/app/repositories/[owner]/[name]/page.tsx"),
+  "utf8",
+);
 const compiled = ts.transpileModule(source, {
   compilerOptions: {
     module: ts.ModuleKind.CommonJS,
@@ -160,3 +165,5 @@ assert.equal(
 assert.equal(formatTrendDelta(55), "+55");
 assert.equal(formatTrendDelta(0), "0");
 assert.equal(formatTrendDelta(null), "暂无历史");
+assert.match(homePageSource, /repository\.tags\.map/);
+assert.match(detailPageSource, /repository\.tags\.map/);

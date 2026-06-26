@@ -57,6 +57,7 @@
 - 首页支持按语言筛选 Trending 数据，并将筛选参数透传到后端 `/api/repositories/trending`。
 - 首页关键词搜索支持叠加语言筛选，并将语言参数透传到后端 `/api/repositories/search`。
 - 项目详情页支持展示基于最近两条历史快照计算的 stars 趋势变化。
+- 首页项目卡片和项目详情页展示仓库 topics 标签，缺少 topics 时沿用语言标签兜底。
 - 增加精选专题页 `/collections/[slug]`，展示专题说明、入选项目、理由和评分。
 - AI 精选生成支持新手友好、AI Agent、LLM 工具和开发工具四类专题。
 - AI 精选支持在配置 `REPO_SCOUT_OPENAI_BASE_URL`、`REPO_SCOUT_OPENAI_API_KEY` 和 `REPO_SCOUT_OPENAI_MODEL` 后调用 OpenAI-compatible 模型生成精选理由，并在模型失败时回退本地模板。
@@ -195,3 +196,4 @@
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest apps/api/tests/test_curation.py` 验证 AI Agent 和 LLM 工具精选专题生成。
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证首页右侧精选专题 Top pick 展示。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest apps/api/tests/test_curation.py` 验证 OpenAI-compatible 模型精选理由、模型失败回退模板和现有精选流程。
+- 2026-06-26：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证首页卡片和项目详情页 topics 标签展示。

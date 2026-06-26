@@ -98,6 +98,16 @@ export default async function RepositoryDetailPage({ params }: RepositoryDetailP
             <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-muted md:mt-5 md:text-lg md:leading-8">
               {repository.description}
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {repository.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="max-w-full truncate rounded-full border border-[#315987] bg-[#10213d] px-3 py-1.5 text-xs font-black text-cyan"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
 
             <section className="mt-6 rounded-lg border border-[#254a76] bg-[#172b50]/90 p-5 shadow-terminal md:mt-8 md:p-6">
               <div className="flex items-center gap-3">

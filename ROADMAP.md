@@ -63,6 +63,7 @@
 - 项目详情页支持展示基于最近两条历史快照计算的 stars 趋势变化。
 - 项目详情页支持展示所属精选专题，并可跳转回专题页。
 - 项目详情页支持展示同专题更多项目，帮助从单个仓库继续浏览相关精选。
+- 项目详情页支持从首页筛选/排序上下文返回原榜单。
 - 首页项目卡片和项目详情页展示仓库 topics 标签，缺少 topics 时沿用语言标签兜底。
 - 增加精选专题页 `/collections/[slug]`，展示专题说明、入选项目、理由和评分。
 - AI 精选生成支持新手友好、AI Agent、LLM 工具和开发工具四类专题。
@@ -212,3 +213,4 @@
 - 2026-06-26：已新增 `scripts/validate-runtime.sh` 和 `scripts/test-runtime-validation.sh`，接入 `scripts/validate-local-release.sh`，并通过运行态脚本验证临时 API/Web 服务、首页、详情页、专题页、排序页和语言筛选页。
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `scripts/validate-runtime.sh` 验证首页空结果清除筛选入口。
 - 2026-06-26：已将脚本化运行验收结果补充到 `docs/runtime-acceptance.md`。
+- 2026-06-26：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `scripts/validate-runtime.sh` 验证详情页返回榜单上下文。

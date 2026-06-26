@@ -94,11 +94,17 @@ export function buildRepositoryApiPath(options: RepositoryApiPathOptions): strin
   return `/api/repositories/trending?${params.toString()}`;
 }
 
-export function buildRepositoryHref(fullName: string): string {
+export function buildRepositoryHref(fullName: string, returnHref = ""): string {
   const separatorIndex = fullName.indexOf("/");
   const owner = separatorIndex >= 0 ? fullName.slice(0, separatorIndex) : fullName;
   const name = separatorIndex >= 0 ? fullName.slice(separatorIndex + 1) : "";
-  return `/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(name)}`;
+  const href = `/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(name)}`;
+  if (!returnHref) {
+    return href;
+  }
+  const params = new URLSearchParams();
+  params.set("from", returnHref);
+  return `${href}?${params.toString()}`;
 }
 
 export function buildCollectionHref(slug: string): string {

@@ -196,6 +196,10 @@ assert.deepEqual(
 );
 
 assert.equal(buildRepositoryHref("openai/agents"), "/repositories/openai/agents");
+assert.equal(
+  buildRepositoryHref("openai/agents", "/?period=weekly&language=Python&sort=gained#ranking"),
+  "/repositories/openai/agents?from=%2F%3Fperiod%3Dweekly%26language%3DPython%26sort%3Dgained%23ranking",
+);
 assert.equal(buildRepositoryHref("owner with space/project/name"), "/repositories/owner%20with%20space/project%2Fname");
 assert.equal(buildCollectionHref("beginner-friendly-ai"), "/collections/beginner-friendly-ai");
 assert.equal(buildCollectionHref("AI Picks"), "/collections/AI%20Picks");
@@ -235,6 +239,10 @@ assert.match(homePageSource, /repository\.tags\.map/);
 assert.match(homePageSource, /sortRepositories/);
 assert.match(homePageSource, /清除筛选/);
 assert.match(homePageSource, /href="\/#ranking"/);
+assert.match(homePageSource, /returnHref/);
+assert.match(homePageSource, /buildRepositoryHref\(repository\.fullName, returnHref\)/);
 assert.match(detailPageSource, /repository\.tags\.map/);
 assert.match(detailPageSource, /featured_collection_slug/);
 assert.match(detailPageSource, /buildCollectionHref/);
+assert.match(detailPageSource, /searchParams/);
+assert.match(detailPageSource, /返回榜单/);

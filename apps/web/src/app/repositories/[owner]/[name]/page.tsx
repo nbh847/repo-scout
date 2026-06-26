@@ -27,6 +27,9 @@ type RepositoryDetailPageProps = {
     owner: string;
     name: string;
   }>;
+  searchParams?: Promise<{
+    from?: string | string[];
+  }>;
 };
 
 const apiBaseUrl = process.env.REPO_SCOUT_API_URL ?? "http://127.0.0.1:8000";
@@ -83,17 +86,27 @@ function scoreLabel(value: number | null): string {
   return value ? `${value}/5` : "未精选";
 }
 
-export default async function RepositoryDetailPage({ params }: RepositoryDetailPageProps) {
+function readReturnHref(searchParams?: { from?: string | string[] }): string {
+  const rawValue = Array.isArray(searchParams?.from) ? searchParams?.from[0] : searchParams?.from;
+  const value = rawValue?.trim() ?? "";
+  if (!value.startsWith("/") || value.startsWith("//")) {
+    return "/#ranking";
+  }
+  return value;
+}
+
+export default async function RepositoryDetailPage({ params, searchParams }: RepositoryDetailPageProps) {
   const { owner, name } = await params;
+  const returnHref = readReturnHref(await searchParams);
   const result = await fetchRepositoryDetail(owner, name);
 
   if (!result.data) {
     return (
       <main className="min-h-screen bg-[#111325] px-4 py-6 text-ink sm:px-5 md:px-10 md:py-8">
         <div className="mx-auto max-w-4xl">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-cyan">
+          <Link href={returnHref} className="inline-flex items-center gap-2 text-sm font-bold text-cyan">
             <ArrowLeft size={16} aria-hidden="true" />
-            返回首页
+            返回榜单
           </Link>
           <section className="mt-8 rounded-lg border border-amber/50 bg-amber/10 p-5 text-sm font-semibold text-amber md:mt-10 md:p-6">
             项目详情暂不可用：{result.error ?? "Repository not found"}
@@ -119,9 +132,9 @@ export default async function RepositoryDetailPage({ params }: RepositoryDetailP
     <main className="min-h-screen bg-[#111325] px-4 py-6 text-ink sm:px-5 md:px-10 md:py-8">
       <div className="pointer-events-none fixed inset-0 bg-grid opacity-20" />
       <div className="relative mx-auto max-w-5xl">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-cyan">
+        <Link href={returnHref} className="inline-flex items-center gap-2 text-sm font-bold text-cyan">
           <ArrowLeft size={16} aria-hidden="true" />
-          返回首页
+          返回榜单
         </Link>
 
         <section className="mt-7 grid gap-6 md:mt-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
@@ -167,7 +180,7 @@ export default async function RepositoryDetailPage({ params }: RepositoryDetailP
                   {relatedProjects.map((project) => (
                     <Link
                       key={project.repo}
-                      href={buildRepositoryHref(project.repo)}
+                      href={buildRepositoryHref(project.repo, returnHref)}
                       className="rounded-lg border border-[#244169] bg-[#10213d] p-4 hover:border-cyan/50"
                     >
                       <div className="flex items-start justify-between gap-3">

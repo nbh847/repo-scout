@@ -107,15 +107,25 @@ function readSort(searchParams?: SearchParams): RepositorySortMode {
 }
 
 function buildHomeFilterHref(period: string, language: string, sort: RepositorySortMode): string {
+  return buildHomeReturnHref("", period, language, sort);
+}
+
+function buildHomeReturnHref(query: string, period: string, language: string, sort: RepositorySortMode): string {
   const params = new URLSearchParams();
-  params.set("period", period);
+  if (query) {
+    params.set("q", query);
+  }
+  if (period !== "daily" || query || language || sort !== "ranking") {
+    params.set("period", period);
+  }
   if (language) {
     params.set("language", language);
   }
   if (sort !== "ranking") {
     params.set("sort", sort);
   }
-  return `/?${params.toString()}#ranking`;
+  const queryString = params.toString();
+  return queryString ? `/?${queryString}#ranking` : "/#ranking";
 }
 
 function metricValue(metrics: ReturnType<typeof buildMetrics>, label: string): string {
@@ -147,6 +157,7 @@ export default async function Home({ searchParams }: HomeProps) {
     buildRepositoryViewModel(repository, index),
   );
   const activeSortLabel = sortFilters.find((filter) => filter.value === sort)?.label ?? "榜单排名";
+  const returnHref = buildHomeReturnHref(query, period, language, sort);
   const featuredProjects = buildFeaturedProjects(featuredResult.data);
   const metrics = buildMetrics(repositories);
   const dataError = repositoryResult.error ?? featuredResult.error;
@@ -320,7 +331,7 @@ export default async function Home({ searchParams }: HomeProps) {
               {primaryRepositories.map((repository) => (
                 <Link
                   key={repository.fullName}
-                  href={buildRepositoryHref(repository.fullName)}
+                  href={buildRepositoryHref(repository.fullName, returnHref)}
                   className="flex min-h-[320px] flex-col rounded-lg border border-[#254a76] bg-[#172b50]/90 p-4 shadow-terminal sm:min-h-[360px] sm:p-5 xl:min-h-[382px]"
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -422,7 +433,7 @@ export default async function Home({ searchParams }: HomeProps) {
                     </span>
                   </div>
                   <Link
-                    href={buildRepositoryHref(project.repo)}
+                    href={buildRepositoryHref(project.repo, returnHref)}
                     className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-orange-500 px-4 text-sm font-black text-white"
                   >
                     查看

@@ -162,21 +162,43 @@ def trending_repositories(
     )
     if period is not None:
         run_query = run_query.where(TrendingRun.period == period)
-    if language and language.strip():
-        run_query = run_query.where(func.lower(TrendingRun.language) == language.strip().lower())
+    selected_language = language.strip() if language and language.strip() else None
+    if selected_language is not None:
+        run_query = run_query.where(TrendingRun.language.is_(None))
 
     latest_run = db.scalar(
         run_query
         .order_by(desc(TrendingRun.finished_at), desc(TrendingRun.id))
         .limit(1)
     )
+    if latest_run is None and selected_language is not None:
+        fallback_run_query = select(TrendingRun).where(
+            TrendingRun.source == "github_trending",
+            TrendingRun.status == "success",
+            func.lower(TrendingRun.language) == selected_language.lower(),
+        )
+        if period is not None:
+            fallback_run_query = fallback_run_query.where(TrendingRun.period == period)
+        latest_run = db.scalar(
+            fallback_run_query
+            .order_by(desc(TrendingRun.finished_at), desc(TrendingRun.id))
+            .limit(1)
+        )
     if latest_run is None:
         return []
 
-    rows = db.execute(
+    snapshots_query = (
         select(RepositorySnapshot, Repository)
         .join(Repository, Repository.id == RepositorySnapshot.repository_id)
         .where(RepositorySnapshot.trending_run_id == latest_run.id)
+    )
+    if selected_language is not None:
+        snapshots_query = snapshots_query.where(
+            func.lower(Repository.primary_language) == selected_language.lower()
+        )
+
+    rows = db.execute(
+        snapshots_query
         .order_by(RepositorySnapshot.rank.asc())
         .limit(limit)
     ).all()

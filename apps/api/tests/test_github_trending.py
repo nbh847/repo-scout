@@ -282,7 +282,7 @@ class GitHubTrendingIngestionTest(unittest.TestCase):
         )
         self.assertEqual([repository.rank for repository in repositories], [1, 2])
 
-    def test_trending_repositories_filters_by_period_and_language(self) -> None:
+    def test_trending_repositories_filters_latest_period_run_by_repository_language(self) -> None:
         with Session(self.engine) as db:
             ingest_trending_repositories(
                 db,
@@ -300,7 +300,7 @@ class GitHubTrendingIngestionTest(unittest.TestCase):
                     )
                 ],
                 period="daily",
-                language="python",
+                language=None,
             )
             ingest_trending_repositories(
                 db,
@@ -311,14 +311,25 @@ class GitHubTrendingIngestionTest(unittest.TestCase):
                         name="weekly-project",
                         url="https://github.com/weekly-owner/weekly-project",
                         description="Weekly repository.",
-                        primary_language="Python",
+                        primary_language="TypeScript",
                         stars=200,
                         forks=20,
                         stars_gained=15,
+                    ),
+                    TrendingRepository(
+                        rank=2,
+                        owner="weekly-python-owner",
+                        name="weekly-python-project",
+                        url="https://github.com/weekly-python-owner/weekly-python-project",
+                        description="Weekly Python repository.",
+                        primary_language="Python",
+                        stars=150,
+                        forks=15,
+                        stars_gained=10,
                     )
                 ],
                 period="weekly",
-                language="python",
+                language=None,
             )
             ingest_trending_repositories(
                 db,
@@ -342,11 +353,15 @@ class GitHubTrendingIngestionTest(unittest.TestCase):
             repositories = trending_repositories(
                 limit=10,
                 period="weekly",
-                language="python",
+                language="Python",
                 db=db,
             )
 
-        self.assertEqual([repository.full_name for repository in repositories], ["weekly-owner/weekly-project"])
+        self.assertEqual(
+            [repository.full_name for repository in repositories],
+            ["weekly-python-owner/weekly-python-project"],
+        )
+        self.assertEqual([repository.rank for repository in repositories], [2])
 
     def test_search_repositories_filters_query_by_language(self) -> None:
         with Session(self.engine) as db:

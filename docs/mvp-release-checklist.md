@@ -2,7 +2,7 @@
 
 ## 当前 MVP 能力
 
-- 首页展示 GitHub Trending 项目榜单，默认读取最新一次成功抓取 run，并支持按 `daily`、`weekly`、`monthly` 和语言筛选匹配 run。
+- 首页展示 GitHub Trending 项目榜单，默认读取最新一次成功抓取 run，并支持按 `daily`、`weekly`、`monthly` 筛选；语言筛选优先基于最新全量 run 内的仓库主语言过滤。
 - 首页语言筛选优先读取已入库仓库语言列表，接口不可用时回退默认语言选项。
 - 支持关键词搜索，覆盖仓库名、描述、语言和 topics，并可叠加语言筛选。
 - 支持项目详情页 `/repositories/[owner]/[name]`，展示仓库核心信息、GitHub 链接、精选理由、所属精选专题、同专题更多项目和规则评分。

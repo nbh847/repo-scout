@@ -76,7 +76,7 @@ MVP 不做完整个性化推荐，不读取用户行为，也不要求项目 REA
 
 ## API 草案
 
-- `GET /api/repositories/trending`：获取热门项目榜单，支持 `period` 和 `language` 查询参数，读取匹配条件下最新一次成功抓取 run。
+- `GET /api/repositories/trending`：获取热门项目榜单，支持 `period` 和 `language` 查询参数；周期筛选读取最新一次成功抓取 run，语言筛选优先基于最新全量 run 内的仓库主语言过滤，缺少全量 run 时再回退到对应语言 run。
 - `GET /api/repositories/search`：关键词搜索。
 - `GET /api/repositories/languages`：返回已入库仓库的可选语言列表，用于首页语言筛选。
 - `GET /api/repositories/:owner/:name`：获取项目详情；如果项目已进入精选专题，同时返回入选理由、所属专题和评分；如果存在历史快照，同时返回最近两次快照的 stars 趋势差值。

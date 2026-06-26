@@ -233,6 +233,8 @@ assert.deepEqual(normalize(sortRepositories(sortableRepositories, "gained").map(
 ]);
 assert.match(homePageSource, /repository\.tags\.map/);
 assert.match(homePageSource, /sortRepositories/);
+assert.match(homePageSource, /清除筛选/);
+assert.match(homePageSource, /href="\/#ranking"/);
 assert.match(detailPageSource, /repository\.tags\.map/);
 assert.match(detailPageSource, /featured_collection_slug/);
 assert.match(detailPageSource, /buildCollectionHref/);

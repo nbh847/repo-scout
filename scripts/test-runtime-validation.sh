@@ -25,4 +25,5 @@ assert_contains "$SCRIPT_CONTENT" "/repositories/langchain-ai/langchain" "script
 assert_contains "$SCRIPT_CONTENT" "/collections/beginner-friendly-ai" "scripts/validate-runtime.sh"
 assert_contains "$SCRIPT_CONTENT" "?period=daily&sort=gained" "scripts/validate-runtime.sh"
 assert_contains "$SCRIPT_CONTENT" "?period=daily&language=Python" "scripts/validate-runtime.sh"
+assert_contains "$SCRIPT_CONTENT" "?q=repo-scout-no-match" "scripts/validate-runtime.sh"
 assert_contains "$CHECKLIST_CONTENT" "scripts/validate-runtime.sh" "docs/mvp-release-checklist.md"

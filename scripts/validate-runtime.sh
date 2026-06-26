@@ -111,5 +111,6 @@ assert_url_contains "${WEB_URL}/repositories/langchain-ai/langchain" "为什么�
 assert_url_contains "${WEB_URL}/collections/beginner-friendly-ai" "适合初学者的 AI 项目" "collection"
 assert_url_contains "${WEB_URL}/?period=daily&sort=gained" "新增 Stars" "sort"
 assert_url_contains "${WEB_URL}/?period=daily&language=Python" "langchain-ai/langchain" "language"
+assert_url_contains "${WEB_URL}/?q=repo-scout-no-match" "清除筛选" "empty-state"
 
 printf 'Runtime validation passed: %s\n' "$WEB_URL"

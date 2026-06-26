@@ -3,6 +3,7 @@ import {
   ExternalLink,
   Flame,
   Radar,
+  RotateCcw,
   Search,
   SlidersHorizontal,
   Sparkles,
@@ -293,8 +294,15 @@ export default async function Home({ searchParams }: HomeProps) {
               </div>
             ) : null}
             {primaryRepositories.length === 0 && !dataError ? (
-              <div className="mt-8 rounded-lg border border-line/80 bg-surface/70 p-5 text-sm text-muted shadow-terminal">
-                暂无匹配项目。换一个关键词重新扫描。
+              <div className="mt-8 flex flex-col gap-4 rounded-lg border border-line/80 bg-surface/70 p-5 text-sm text-muted shadow-terminal sm:flex-row sm:items-center sm:justify-between">
+                <span>暂无匹配项目。换一个关键词重新扫描。</span>
+                <Link
+                  href="/#ranking"
+                  className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 text-sm font-black text-white"
+                >
+                  <RotateCcw size={16} aria-hidden="true" />
+                  清除筛选
+                </Link>
               </div>
             ) : null}
 

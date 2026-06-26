@@ -59,7 +59,7 @@
 
 ## 进行中
 
-- 发布前确认阶段：部署上线属于红线操作，需用户明确确认后才能继续。
+- 本地发布前硬化：不部署远程，继续处理本地验证、依赖风险和文档一致性。
 
 ## 功能开发计划
 
@@ -112,7 +112,7 @@
 
 ## 下一步
 
-- 如需继续发布或部署，先由用户明确确认发布目标和环境。
+- 继续本地发布前硬化，不做远程部署。
 - 未进入发布前，继续跟进 Next.js 内部 `postcss@8.4.31` 上游修复状态。
 
 ## 阻塞
@@ -170,4 +170,5 @@
 - 2026-06-26：已按功能边界提交 `dc9b4ae`、`de98763`、`ed6eec0` 三个提交，覆盖后端抓取/精选、前端真实数据/详情页、文档脚本/发布准备。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck`、`npm run build:web`、`scripts/test-local-demo.sh` 和 `scripts/test-mvp-release-checklist.sh` 验证首页 Trending 周期/语言筛选；后端测试仍有 SQLite `ResourceWarning`，测试结果为通过。
 - 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck`、`npm run build:web`、`scripts/test-local-demo.sh`、`scripts/test-mvp-release-checklist.sh` 和 `git diff --check` 验证项目详情页 stars 趋势变化；后端测试仍有 SQLite `ResourceWarning`，测试结果为通过。
-- 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck`、`npm run build:web`、`scripts/test-local-demo.sh`、`scripts/test-mvp-release-checklist.sh` 和 `git diff --check` 验证精选专题页 API、链接生成和页面路由；后端测试仍有 SQLite `ResourceWarning`，测试结果为通过。
+- 2026-06-26：已通过 `apps/api/.venv/bin/python -m unittest discover apps/api/tests`、`apps/api/.venv/bin/python -m compileall apps/api/app`、`npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck`、`npm run build:web`、`scripts/test-local-demo.sh`、`scripts/test-mvp-release-checklist.sh` 和 `git diff --check` 验证精选专题页 API、链接生成和页面路由。
+- 2026-06-26：已通过 `apps/api/.venv/bin/python -W error::ResourceWarning -m unittest discover apps/api/tests` 验证测试内存 SQLite engine 已显式释放，不再出现 SQLite `ResourceWarning`。

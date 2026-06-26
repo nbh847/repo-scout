@@ -22,6 +22,9 @@ class CurationTest(unittest.TestCase):
         self.engine = create_engine("sqlite:///:memory:")
         Base.metadata.create_all(bind=self.engine)
 
+    def tearDown(self) -> None:
+        self.engine.dispose()
+
     def seed_trending(self, db: Session) -> None:
         ingest_trending_repositories(
             db,

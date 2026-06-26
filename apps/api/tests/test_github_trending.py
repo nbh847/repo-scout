@@ -113,6 +113,9 @@ class GitHubTrendingIngestionTest(unittest.TestCase):
         Base.metadata.create_all(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine, autoflush=False, autocommit=False)
 
+    def tearDown(self) -> None:
+        self.engine.dispose()
+
     def test_ingest_trending_repositories_creates_run_repositories_and_snapshots(self) -> None:
         items = [
             TrendingRepository(
@@ -345,6 +348,9 @@ class GitHubTrendingAdminEndpointTest(unittest.TestCase):
     def setUp(self) -> None:
         self.engine = create_engine("sqlite:///:memory:")
         Base.metadata.create_all(bind=self.engine)
+
+    def tearDown(self) -> None:
+        self.engine.dispose()
 
     def test_trigger_github_trending_ingest_reuses_ingestion_service(self) -> None:
         with Session(self.engine) as db:

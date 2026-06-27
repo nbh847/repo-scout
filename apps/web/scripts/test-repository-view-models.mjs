@@ -13,6 +13,14 @@ const detailPageSource = fs.readFileSync(
   path.resolve("src/app/repositories/[owner]/[name]/page.tsx"),
   "utf8",
 );
+const ingestionRouteSource = fs.readFileSync(
+  path.resolve("src/app/api/ingest/trending/route.ts"),
+  "utf8",
+);
+const ingestionConfigSource = fs.readFileSync(
+  path.resolve("src/app/trending-ingestion-config.ts"),
+  "utf8",
+);
 const compiled = ts.transpileModule(source, {
   compilerOptions: {
     module: ts.ModuleKind.CommonJS,
@@ -240,6 +248,10 @@ assert.match(homePageSource, /sortRepositories/);
 assert.match(homePageSource, /RankingSortControl/);
 assert.match(homePageSource, /TrendingIngestionPanel/);
 assert.doesNotMatch(homePageSource, /\{activeSortLabel\}/);
+assert.match(ingestionConfigSource, /daily: 20/);
+assert.match(ingestionConfigSource, /weekly: 30/);
+assert.match(ingestionConfigSource, /monthly: 50/);
+assert.match(ingestionRouteSource, /ingestionLimitForPeriod\(period\)/);
 assert.match(homePageSource, /清除筛选/);
 assert.match(homePageSource, /href="\/#ranking"/);
 assert.match(homePageSource, /returnHref/);

@@ -3,6 +3,7 @@
 import { CheckCircle2, LoaderCircle, RefreshCw, TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ingestionLimitForPeriod } from "./trending-ingestion-config";
 
 export type TrendingRun = {
   id: number;
@@ -87,6 +88,7 @@ export function TrendingIngestionPanel({
   }
 
   const isRunning = state === "running";
+  const ingestionLimit = ingestionLimitForPeriod(period);
   const statusText =
     state === "success"
       ? "抓取完成"
@@ -114,8 +116,8 @@ export function TrendingIngestionPanel({
         </div>
         <p className="mt-1.5 text-xs font-semibold text-muted">
           {isRunning
-            ? `正在抓取 ${periodLabels[period] ?? period}${language ? ` · ${language}` : ""}，已用时 ${elapsedSeconds}s`
-            : error || `最近完成：${formatFinishedAt(run?.finished_at ?? null)}`}
+            ? `正在抓取 ${periodLabels[period] ?? period}${language ? ` · ${language}` : ""}的 ${ingestionLimit} 个项目，已用时 ${elapsedSeconds}s`
+            : error || `计划抓取 ${ingestionLimit} 个项目 · 最近完成：${formatFinishedAt(run?.finished_at ?? null)}`}
         </p>
         {isRunning ? (
           <div className="mt-3 h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-[#20395d]">

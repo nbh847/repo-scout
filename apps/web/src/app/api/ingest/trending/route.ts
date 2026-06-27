@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ingestionLimitForPeriod } from "../../../trending-ingestion-config";
 
 const apiBaseUrl = process.env.REPO_SCOUT_API_URL ?? "http://127.0.0.1:8000";
 
 export async function POST(request: NextRequest) {
   const params = new URLSearchParams();
-  params.set("period", request.nextUrl.searchParams.get("period") ?? "daily");
-  params.set("limit", "20");
+  const period = request.nextUrl.searchParams.get("period") ?? "daily";
+  params.set("period", period);
+  params.set("limit", String(ingestionLimitForPeriod(period)));
 
   const language = request.nextUrl.searchParams.get("language");
   if (language) {

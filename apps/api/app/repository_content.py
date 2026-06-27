@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .database import Base, SessionLocal, engine
+from .migrations import ensure_repository_content_columns
 from .models import Repository
 
 
@@ -184,6 +185,7 @@ def backfill_repository_chinese_content(db: Session, force: bool = False) -> int
 
 def main() -> None:
     Base.metadata.create_all(bind=engine)
+    ensure_repository_content_columns(engine)
     with SessionLocal() as db:
         count = backfill_repository_chinese_content(db, force=True)
     print(f"Backfilled Chinese content for {count} repositories.")

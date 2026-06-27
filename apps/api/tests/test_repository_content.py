@@ -53,14 +53,23 @@ class RepositoryChineseContentTest(unittest.TestCase):
         session_context = MagicMock()
         session_context.__enter__.return_value = db
         output = io.StringIO()
+        calls = []
 
         with (
-            patch("app.repository_content.Base.metadata.create_all") as create_all,
+            patch(
+                "app.repository_content.Base.metadata.create_all",
+                side_effect=lambda **kwargs: calls.append("create_all"),
+            ) as create_all,
             patch.object(repository_content, "engine", sentinel.engine),
             patch.object(
                 repository_content,
+                "ensure_repository_content_columns",
+                side_effect=lambda engine: calls.append("migrate"),
+            ) as migrate,
+            patch.object(
+                repository_content,
                 "SessionLocal",
-                return_value=session_context,
+                side_effect=lambda: (calls.append("session"), session_context)[1],
             ) as session_local,
             patch.object(
                 repository_content,
@@ -72,7 +81,9 @@ class RepositoryChineseContentTest(unittest.TestCase):
             repository_content.main()
 
         create_all.assert_called_once_with(bind=sentinel.engine)
+        migrate.assert_called_once_with(sentinel.engine)
         session_local.assert_called_once_with()
+        self.assertEqual(calls, ["create_all", "migrate", "session"])
         backfill.assert_called_once_with(db, force=True)
         self.assertEqual(
             output.getvalue(),
@@ -397,6 +408,45 @@ class RepositoryChineseContentTest(unittest.TestCase):
 
         engine.dispose()
         urlopen.assert_not_called()
+
+    @patch(
+        "app.repository_content.build_repository_chinese_content",
+        return_value=("新的中文摘要。", "功能：新的中文详情。"),
+    )
+    def test_force_backfill_overwrites_and_persists_existing_content(
+        self, build_content
+    ) -> None:
+        engine = create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(bind=engine)
+
+        with Session(engine) as db:
+            db.add(
+                Repository(
+                    owner="example",
+                    name="existing-repository",
+                    full_name="example/existing-repository",
+                    url="https://github.com/example/existing-repository",
+                    description="An experimental project.",
+                    summary_zh="旧的中文摘要。",
+                    description_zh="功能：旧的中文详情。",
+                )
+            )
+            db.commit()
+
+            updated = backfill_repository_chinese_content(db, force=True)
+
+        with Session(engine) as db:
+            repository = db.query(Repository).one()
+            self.assertEqual(updated, 1)
+            self.assertEqual(repository.summary_zh, "新的中文摘要。")
+            self.assertEqual(repository.description_zh, "功能：新的中文详情。")
+
+        engine.dispose()
+        build_content.assert_called_once_with(
+            "existing-repository",
+            "An experimental project.",
+            None,
+        )
 
 
 if __name__ == "__main__":

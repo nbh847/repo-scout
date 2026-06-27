@@ -1,6 +1,9 @@
+import json
 import sys
 from pathlib import Path
 import unittest
+from unittest.mock import MagicMock, patch
+from urllib.error import URLError
 
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import Session
@@ -38,6 +41,141 @@ class RepositoryContentMigrationTest(unittest.TestCase):
 
 
 class RepositoryChineseContentTest(unittest.TestCase):
+    @patch.dict(
+        "os.environ",
+        {
+            "REPO_SCOUT_OPENAI_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
+            "REPO_SCOUT_OPENAI_API_KEY": "test-api-key",
+            "REPO_SCOUT_OPENAI_MODEL": "glm-4.7",
+        },
+        clear=True,
+    )
+    @patch("app.repository_content.request.urlopen")
+    def test_uses_glm_for_unmatched_english_description(self, urlopen) -> None:
+        response = MagicMock()
+        response.read.return_value = json.dumps(
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "content": "用于在 Mac 上通过轻量虚拟机创建和运行 Linux 容器。"
+                        }
+                    }
+                ]
+            }
+        ).encode()
+        urlopen.return_value.__enter__.return_value = response
+
+        summary, description = build_repository_chinese_content(
+            name="lima",
+            description="Linux virtual machines, typically on macOS, for running containers.",
+            primary_language="Go",
+        )
+
+        self.assertEqual(
+            summary,
+            "用于在 Mac 上通过轻量虚拟机创建和运行 Linux 容器。",
+        )
+        self.assertEqual(
+            description,
+            "功能：用于在 Mac 上通过轻量虚拟机创建和运行 Linux 容器。",
+        )
+        sent_request = urlopen.call_args.args[0]
+        self.assertEqual(
+            sent_request.full_url,
+            "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+        )
+        payload = json.loads(sent_request.data)
+        self.assertEqual(payload["model"], "glm-4.7")
+        self.assertEqual(payload["thinking"], {"type": "disabled"})
+        self.assertEqual(payload["temperature"], 0.2)
+        self.assertEqual(payload["max_tokens"], 120)
+        self.assertEqual(urlopen.call_args.kwargs["timeout"], 20)
+
+    @patch.dict("os.environ", {}, clear=True)
+    @patch("app.repository_content.request.urlopen")
+    def test_falls_back_to_original_description_without_model_config(
+        self, urlopen
+    ) -> None:
+        original = "An experimental project."
+
+        summary, description = build_repository_chinese_content(
+            name="unknown-project",
+            description=original,
+            primary_language="Rust",
+        )
+
+        self.assertEqual(summary, original)
+        self.assertEqual(description, f"功能：{original}")
+        urlopen.assert_not_called()
+
+    @patch.dict(
+        "os.environ",
+        {
+            "REPO_SCOUT_OPENAI_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
+            "REPO_SCOUT_OPENAI_API_KEY": "test-api-key",
+            "REPO_SCOUT_OPENAI_MODEL": "glm-4.7",
+        },
+        clear=True,
+    )
+    @patch(
+        "app.repository_content.request.urlopen",
+        side_effect=URLError("network unavailable"),
+    )
+    def test_falls_back_to_original_description_when_model_request_fails(
+        self, urlopen
+    ) -> None:
+        original = "An experimental project."
+
+        summary, description = build_repository_chinese_content(
+            name="unknown-project",
+            description=original,
+            primary_language="Rust",
+        )
+
+        self.assertEqual(summary, original)
+        self.assertEqual(description, f"功能：{original}")
+        urlopen.assert_called_once()
+
+    @patch.dict("os.environ", {}, clear=True)
+    @patch("app.repository_content.request.urlopen")
+    def test_uses_honest_summary_for_empty_description(self, urlopen) -> None:
+        summary, description = build_repository_chinese_content(
+            name="unknown-project",
+            description=None,
+            primary_language="Rust",
+        )
+
+        self.assertEqual(summary, "暂无项目简介，无法归纳具体功能。")
+        self.assertEqual(description, "功能：暂无项目简介，无法归纳具体功能。")
+        urlopen.assert_not_called()
+
+    @patch.dict(
+        "os.environ",
+        {
+            "REPO_SCOUT_OPENAI_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
+            "REPO_SCOUT_OPENAI_API_KEY": "test-api-key",
+            "REPO_SCOUT_OPENAI_MODEL": "glm-4.7",
+        },
+        clear=True,
+    )
+    @patch("app.repository_content.request.urlopen")
+    def test_does_not_call_model_for_chinese_or_rule_matched_description(
+        self, urlopen
+    ) -> None:
+        build_repository_chinese_content(
+            name="knowledge-base",
+            description="一个用于构建本地知识库的开源工具。",
+            primary_language="TypeScript",
+        )
+        build_repository_chinese_content(
+            name="agent-kit",
+            description="Build production AI agents.",
+            primary_language="Python",
+        )
+
+        urlopen.assert_not_called()
+
     def test_builds_chinese_summary_for_english_ai_repository(self) -> None:
         summary, description = build_repository_chinese_content(
             name="agent-kit",

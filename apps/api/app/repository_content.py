@@ -1,4 +1,8 @@
+from dataclasses import dataclass
+import json
+import os
 import re
+from urllib import request
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -45,6 +49,80 @@ CONTENT_PROFILES = (
 )
 
 
+@dataclass(frozen=True)
+class ModelSummaryConfig:
+    base_url: str
+    api_key: str
+    model: str
+
+
+def load_model_summary_config() -> ModelSummaryConfig | None:
+    base_url = os.getenv("REPO_SCOUT_OPENAI_BASE_URL", "").strip()
+    api_key = os.getenv("REPO_SCOUT_OPENAI_API_KEY", "").strip()
+    model = os.getenv("REPO_SCOUT_OPENAI_MODEL", "").strip()
+    if not all((base_url, api_key, model)):
+        return None
+    return ModelSummaryConfig(base_url=base_url, api_key=api_key, model=model)
+
+
+def request_model_summary(
+    config: ModelSummaryConfig,
+    name: str,
+    description: str,
+    primary_language: str | None,
+) -> str:
+    prompt = (
+        "请根据以下 GitHub 仓库信息，只返回一句事实性的中文功能描述，不要点评，"
+        "不要使用 Markdown，也不要补充无法从输入确认的信息。\n"
+        f"仓库名：{name}\n"
+        f"英文简介：{description}\n"
+        f"主要语言：{primary_language or '未知'}"
+    )
+    payload = json.dumps(
+        {
+            "model": config.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "thinking": {"type": "disabled"},
+            "temperature": 0.2,
+            "max_tokens": 120,
+        }
+    ).encode("utf-8")
+    model_request = request.Request(
+        f"{config.base_url.rstrip('/')}/chat/completions",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {config.api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    with request.urlopen(model_request, timeout=20) as response:
+        result = json.loads(response.read().decode("utf-8"))
+    return result["choices"][0]["message"]["content"].strip()
+
+
+def generate_model_summary(
+    name: str,
+    description: str,
+    primary_language: str | None,
+) -> str | None:
+    config = load_model_summary_config()
+    if config is None:
+        return None
+    try:
+        summary = request_model_summary(
+            config,
+            name=name,
+            description=description,
+            primary_language=primary_language,
+        )
+    except (OSError, ValueError, KeyError, IndexError, TypeError, AttributeError):
+        return None
+    if not summary or not contains_chinese(summary):
+        return None
+    return summary
+
+
 def contains_chinese(value: str) -> bool:
     return bool(re.search(r"[\u4e00-\u9fff]", value))
 
@@ -57,15 +135,19 @@ def build_repository_chinese_content(
     original = (description or "").strip()
     if original and contains_chinese(original):
         return original, f"功能：{original}"
+    if not original:
+        summary = "暂无项目简介，无法归纳具体功能。"
+        return summary, f"功能：{summary}"
 
     searchable = f"{name} {original}".lower()
-    function = "具体功能暂未完成中文归纳"
-    commentary = ""
     for keywords, matched_function, matched_commentary in CONTENT_PROFILES:
         if any(keyword in searchable for keyword in keywords):
             function = matched_function
             commentary = matched_commentary
             break
+    else:
+        summary = generate_model_summary(name, original, primary_language) or original
+        return summary, f"功能：{summary}"
 
     language = primary_language or "多种技术"
     summary = f"{function}。"

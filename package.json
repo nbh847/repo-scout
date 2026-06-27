@@ -12,7 +12,8 @@
     "dev:api": "apps/api/.venv/bin/uvicorn app.main:app --reload --app-dir apps/api",
     "seed:api": "cd apps/api && .venv/bin/python -m app.seed",
     "ingest:trending": "cd apps/api && .venv/bin/python -m app.github_trending",
-    "curate:featured": "cd apps/api && .venv/bin/python -m app.curation"
+    "curate:featured": "cd apps/api && .venv/bin/python -m app.curation",
+    "backfill:content": "cd apps/api && .venv/bin/python -m app.repository_content"
   },
   "overrides": {
     "postcss": "^8.5.10",

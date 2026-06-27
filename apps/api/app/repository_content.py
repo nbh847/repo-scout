@@ -7,6 +7,7 @@ from urllib import request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .database import Base, SessionLocal, engine
 from .models import Repository
 
 
@@ -179,3 +180,14 @@ def backfill_repository_chinese_content(db: Session, force: bool = False) -> int
     if repositories:
         db.commit()
     return len(repositories)
+
+
+def main() -> None:
+    Base.metadata.create_all(bind=engine)
+    with SessionLocal() as db:
+        count = backfill_repository_chinese_content(db, force=True)
+    print(f"Backfilled Chinese content for {count} repositories.")
+
+
+if __name__ == "__main__":
+    main()

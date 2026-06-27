@@ -1,8 +1,10 @@
+import io
 import json
 import sys
-from pathlib import Path
 import unittest
+from contextlib import redirect_stdout
 from http.client import IncompleteRead
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 from urllib.error import URLError
 
@@ -11,6 +13,7 @@ from sqlalchemy.orm import Session
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from app import repository_content
 from app.database import Base
 from app.github_trending import TrendingRepository, ingest_trending_repositories
 from app.migrations import ensure_repository_content_columns
@@ -45,6 +48,34 @@ class RepositoryContentMigrationTest(unittest.TestCase):
 
 
 class RepositoryChineseContentTest(unittest.TestCase):
+    def test_main_forces_repository_content_backfill_and_reports_count(self) -> None:
+        db = MagicMock()
+        session_context = MagicMock()
+        session_context.__enter__.return_value = db
+        output = io.StringIO()
+
+        with (
+            patch.object(
+                repository_content,
+                "SessionLocal",
+                return_value=session_context,
+            ) as session_local,
+            patch.object(
+                repository_content,
+                "backfill_repository_chinese_content",
+                return_value=3,
+            ) as backfill,
+            redirect_stdout(output),
+        ):
+            repository_content.main()
+
+        session_local.assert_called_once_with()
+        backfill.assert_called_once_with(db, force=True)
+        self.assertEqual(
+            output.getvalue(),
+            "Backfilled Chinese content for 3 repositories.\n",
+        )
+
     @patch.dict(
         "os.environ",
         {

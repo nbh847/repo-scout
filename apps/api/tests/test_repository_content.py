@@ -15,7 +15,10 @@ from app.database import Base
 from app.github_trending import TrendingRepository, ingest_trending_repositories
 from app.migrations import ensure_repository_content_columns
 from app.models import Repository
-from app.repository_content import build_repository_chinese_content
+from app.repository_content import (
+    backfill_repository_chinese_content,
+    build_repository_chinese_content,
+)
 
 
 class RepositoryContentMigrationTest(unittest.TestCase):
@@ -263,7 +266,32 @@ class RepositoryChineseContentTest(unittest.TestCase):
         self.assertNotIn("集成成本与学习价值", description)
         self.assertNotIn("点评：", description)
 
-    def test_ingestion_persists_chinese_content(self) -> None:
+    @patch.dict(
+        "os.environ",
+        {
+            "REPO_SCOUT_OPENAI_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
+            "REPO_SCOUT_OPENAI_API_KEY": "test-api-key",
+            "REPO_SCOUT_OPENAI_MODEL": "glm-4.7",
+        },
+        clear=True,
+    )
+    @patch("app.repository_content.request.urlopen")
+    def test_ingestion_persists_model_generated_chinese_content(
+        self, urlopen
+    ) -> None:
+        response = MagicMock()
+        response.read.return_value = json.dumps(
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "content": "用于验证模型摘要能够持久化到数据库的独特项目。"
+                        }
+                    }
+                ]
+            }
+        ).encode()
+        urlopen.return_value.__enter__.return_value = response
         engine = create_engine("sqlite:///:memory:")
         Base.metadata.create_all(bind=engine)
 
@@ -274,10 +302,10 @@ class RepositoryChineseContentTest(unittest.TestCase):
                     TrendingRepository(
                         rank=1,
                         owner="example",
-                        name="agent-kit",
-                        url="https://github.com/example/agent-kit",
-                        description="Build production AI agents.",
-                        primary_language="Python",
+                        name="unmatched-repository",
+                        url="https://github.com/example/unmatched-repository",
+                        description="An experimental project.",
+                        primary_language="Rust",
                         stars=100,
                         forks=10,
                         stars_gained=20,
@@ -288,8 +316,53 @@ class RepositoryChineseContentTest(unittest.TestCase):
 
         engine.dispose()
 
-        self.assertIn("AI Agent", repository.summary_zh)
-        self.assertIn("Python", repository.description_zh)
+        self.assertEqual(
+            repository.summary_zh,
+            "用于验证模型摘要能够持久化到数据库的独特项目。",
+        )
+        self.assertEqual(
+            repository.description_zh,
+            "功能：用于验证模型摘要能够持久化到数据库的独特项目。",
+        )
+
+    @patch.dict(
+        "os.environ",
+        {
+            "REPO_SCOUT_OPENAI_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
+            "REPO_SCOUT_OPENAI_API_KEY": "test-api-key",
+            "REPO_SCOUT_OPENAI_MODEL": "glm-4.7",
+        },
+        clear=True,
+    )
+    @patch("app.repository_content.request.urlopen")
+    def test_backfill_skips_repository_with_complete_chinese_content(
+        self, urlopen
+    ) -> None:
+        engine = create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(bind=engine)
+
+        with Session(engine) as db:
+            repository = Repository(
+                owner="example",
+                name="complete-repository",
+                full_name="example/complete-repository",
+                url="https://github.com/example/complete-repository",
+                description="An experimental project.",
+                summary_zh="已有中文摘要。",
+                description_zh="功能：已有中文摘要。",
+            )
+            db.add(repository)
+            db.commit()
+
+            updated = backfill_repository_chinese_content(db)
+            db.refresh(repository)
+
+            self.assertEqual(updated, 0)
+            self.assertEqual(repository.summary_zh, "已有中文摘要。")
+            self.assertEqual(repository.description_zh, "功能：已有中文摘要。")
+
+        engine.dispose()
+        urlopen.assert_not_called()
 
 
 if __name__ == "__main__":

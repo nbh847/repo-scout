@@ -158,8 +158,16 @@ def build_repository_chinese_content(
     return summary, description_zh
 
 
-def backfill_repository_chinese_content(db: Session) -> int:
-    repositories = db.scalars(select(Repository)).all()
+def backfill_repository_chinese_content(db: Session, force: bool = False) -> int:
+    statement = select(Repository)
+    if not force:
+        statement = statement.where(
+            (Repository.summary_zh.is_(None))
+            | (Repository.summary_zh == "")
+            | (Repository.description_zh.is_(None))
+            | (Repository.description_zh == "")
+        )
+    repositories = db.scalars(statement).all()
     for repository in repositories:
         summary, description = build_repository_chinese_content(
             repository.name,

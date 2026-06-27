@@ -43,6 +43,9 @@ AGENTS.md
 # Local code index
 .codegraph/
 
+# Local isolated worktrees
+.worktrees/
+
 # Runtime data
 data/
 *.sqlite

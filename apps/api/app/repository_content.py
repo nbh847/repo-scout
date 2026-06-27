@@ -142,15 +142,20 @@ def build_repository_chinese_content(
         return summary, f"功能：{summary}"
 
     searchable = f"{name} {original}".lower()
+    matched_profile: tuple[str, str | None] | None = None
     for keywords, matched_function, matched_commentary in CONTENT_PROFILES:
         if any(keyword in searchable for keyword in keywords):
-            function = matched_function
-            commentary = matched_commentary
+            matched_profile = (matched_function, matched_commentary)
             break
-    else:
-        summary = generate_model_summary(name, original, primary_language) or original
-        return summary, f"功能：{summary}"
 
+    model_summary = generate_model_summary(name, original, primary_language)
+    if model_summary:
+        return model_summary, f"功能：{model_summary}"
+
+    if matched_profile is None:
+        return original, f"功能：{original}"
+
+    function, commentary = matched_profile
     language = primary_language or "多种技术"
     summary = f"{function}。"
     description_zh = f"功能：{name} {function}，主要使用 {language} 开发。"

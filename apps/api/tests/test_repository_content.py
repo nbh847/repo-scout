@@ -235,21 +235,83 @@ class RepositoryChineseContentTest(unittest.TestCase):
         clear=True,
     )
     @patch("app.repository_content.request.urlopen")
-    def test_does_not_call_model_for_chinese_or_rule_matched_description(
-        self, urlopen
-    ) -> None:
+    def test_does_not_call_model_for_chinese_description(self, urlopen) -> None:
         build_repository_chinese_content(
             name="knowledge-base",
             description="一个用于构建本地知识库的开源工具。",
             primary_language="TypeScript",
         )
-        build_repository_chinese_content(
+
+        urlopen.assert_not_called()
+
+    @patch.dict(
+        "os.environ",
+        {
+            "REPO_SCOUT_OPENAI_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
+            "REPO_SCOUT_OPENAI_API_KEY": "test-api-key",
+            "REPO_SCOUT_OPENAI_MODEL": "glm-4.7",
+        },
+        clear=True,
+    )
+    @patch("app.repository_content.request.urlopen")
+    def test_prefers_model_summary_over_profile_match_when_configured(
+        self, urlopen
+    ) -> None:
+        response = MagicMock()
+        response.read.return_value = json.dumps(
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "content": "用于构建可生产的 AI Agent 应用，支持工具调用与检索增强。"
+                        }
+                    }
+                ]
+            }
+        ).encode()
+        urlopen.return_value.__enter__.return_value = response
+
+        summary, description = build_repository_chinese_content(
             name="agent-kit",
-            description="Build production AI agents.",
+            description="Build production AI agents with tool calling and retrieval.",
             primary_language="Python",
         )
 
-        urlopen.assert_not_called()
+        self.assertEqual(
+            summary,
+            "用于构建可生产的 AI Agent 应用，支持工具调用与检索增强。",
+        )
+        self.assertEqual(
+            description,
+            "功能：用于构建可生产的 AI Agent 应用，支持工具调用与检索增强。",
+        )
+        urlopen.assert_called_once()
+
+    @patch.dict(
+        "os.environ",
+        {
+            "REPO_SCOUT_OPENAI_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
+            "REPO_SCOUT_OPENAI_API_KEY": "test-api-key",
+            "REPO_SCOUT_OPENAI_MODEL": "glm-4.7",
+        },
+        clear=True,
+    )
+    @patch(
+        "app.repository_content.request.urlopen",
+        side_effect=URLError("network unavailable"),
+    )
+    def test_falls_back_to_profile_when_model_fails_for_matched_description(
+        self, urlopen
+    ) -> None:
+        summary, description = build_repository_chinese_content(
+            name="agent-kit",
+            description="Build production AI agents with tool calling and retrieval.",
+            primary_language="Python",
+        )
+
+        self.assertIn("AI Agent", summary)
+        self.assertIn("Python", description)
+        urlopen.assert_called_once()
 
     def test_builds_chinese_summary_for_english_ai_repository(self) -> None:
         summary, description = build_repository_chinese_content(

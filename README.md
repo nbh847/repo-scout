@@ -127,3 +127,9 @@ REPO_SCOUT_OPENAI_MODEL=glm-4.7
 ```bash
 npm run backfill:content
 ```
+
+## 项目出处
+
+本项目的诞生过程记录在林亦LYi 的视频《月薪0.3元，我有了300个员工》中——使用 KimiWork 桌面端的多 Agent 协作能力，30 分钟内从本地开发到服务器部署完成"开源项目雷达"。
+
+🔗 https://www.bilibili.com/video/BV18Qjo6QEFw/

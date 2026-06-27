@@ -121,3 +121,9 @@ Once the model is enabled, you can backfill Chinese summaries for existing repos
 ```bash
 npm run backfill:content
 ```
+
+## Project Origin
+
+The birth of this project is documented in Lin Yi LYi's video *"300 Employees for ¥0.3/Month"* — using the multi-agent collaboration of KimiWork desktop, an "open-source repository radar" went from local development to server deployment in 30 minutes.
+
+🔗 https://www.bilibili.com/video/BV18Qjo6QEFw/

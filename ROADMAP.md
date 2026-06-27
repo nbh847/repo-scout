@@ -90,6 +90,9 @@
 - 中文项目内容统一为“项目功能 + 简短点评”，并补充文档转换类项目识别，避免只展示宽泛技术分类。
 - 精简首页中文摘要，删除“项目名是一个开源项目”冗余前缀，正文直接展示功能与点评。
 - 无法可靠识别项目用途时不再生成泛泛点评，只保留诚实的未归纳状态；中文原文也不强加无信息量点评。
+- 增加 GLM-4.7 兜底：未匹配确定性 profile 的英文简介会调用 OpenAI-compatible 接口（`REPO_SCOUT_OPENAI_*`）生成事实性中文摘要，模型缺失、请求失败或返回不含中文时安全回退到原文。
+- 增加中文内容回填命令 `npm run backfill:content`，支持幂等迁移和全量重写已有仓库的中文字段。
+- 本地演示脚本支持自动加载根目录 `.env.local`（已 gitignore），用于注入 GLM/OpenAI 配置而不泄露密钥。
 
 ## 进行中
 
@@ -243,3 +246,4 @@
 - 2026-06-27：已通过 34 项后端测试和本地 API/页面检查，验证 `microsoft/markitdown` 中文摘要明确说明文件与 Office 文档转 Markdown 的功能，并包含文档预处理和 AI/RAG 使用价值点评。
 - 2026-06-27：已通过 34 项后端测试和 `microsoft/markitdown` API/搜索页面检查，验证中文摘要删除冗余项目名前缀。
 - 2026-06-27：已通过 35 项后端测试，验证未识别项目和中文原文不再输出泛泛“集成成本与学习价值”点评。
+- 2026-06-27：已通过配置 `.env.local`、运行 `npm run backfill:content` 和 `npm run curate:featured -- --limit 5`，验证 GLM-4.7 为未匹配英文简介生成事实性中文摘要（如 `apple/container` → "这是一个在 Mac 上使用轻量级虚拟机创建和运行 Linux 容器的工具，使用 Swift 编写并针对 Apple silicon 进行了优化。"），50 条仓库全部回填，`summary_zh` 占位条目数从 16 降为 0；本地 API `GET /health`、`GET /api/featured`、`GET /api/repositories/apple/container` 与 Web `http://127.0.0.1:3000` 返回 200。

@@ -181,6 +181,16 @@ export function sortRepositories(
   });
 }
 
+export function repositoryMetricForSort(
+  repository: RepositoryViewModel,
+  sortMode: RepositorySortMode,
+): { label: string; value: string } {
+  if (sortMode === "gained") {
+    return { label: "新增 Stars", value: repository.gained };
+  }
+  return { label: "Stars", value: repository.stars };
+}
+
 export function buildMetrics(repositories: RepositoryViewModel[]): MetricViewModel[] {
   const languages = new Set(repositories.map((repository) => repository.language));
 

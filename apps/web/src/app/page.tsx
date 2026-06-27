@@ -7,7 +7,6 @@ import {
   Search,
   Sparkles,
   Star,
-  Timer,
 } from "lucide-react";
 import Link from "next/link";
 import { RankingSortControl } from "./ranking-sort-control";
@@ -22,6 +21,7 @@ import {
   buildRepositoryHref,
   buildMetrics,
   buildRepositoryViewModel,
+  repositoryMetricForSort,
   type RepositorySortMode,
   type RepositoryViewModel,
   sortRepositories,
@@ -319,8 +319,10 @@ export default async function Home({ searchParams }: HomeProps) {
                 </span>
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {primaryRepositories.map((repository) => (
-                <Link
+              {primaryRepositories.map((repository) => {
+                const repositoryMetric = repositoryMetricForSort(repository, sort);
+                return (
+                  <Link
                   key={repository.fullName}
                   href={buildRepositoryHref(repository.fullName, returnHref)}
                   className="flex min-h-[320px] flex-col rounded-lg border border-[#254a76] bg-[#172b50]/90 p-4 shadow-terminal sm:min-h-[360px] sm:p-5 xl:min-h-[382px]"
@@ -379,12 +381,17 @@ export default async function Home({ searchParams }: HomeProps) {
                       </span>
                     </span>
                     <span className="flex items-center gap-2">
-                      <Timer size={15} aria-hidden="true" />
-                      {repository.gained} stars
+                      {sort === "gained" ? (
+                        <Flame size={15} className="text-orange-400" aria-hidden="true" />
+                      ) : (
+                        <Star size={15} className="text-amber" aria-hidden="true" />
+                      )}
+                      {repositoryMetric.value} {repositoryMetric.label}
                     </span>
                   </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
               </div>
             </div>
           </div>

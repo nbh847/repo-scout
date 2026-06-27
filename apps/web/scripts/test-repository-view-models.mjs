@@ -48,6 +48,7 @@ const {
   buildRepositoryViewModel,
   buildMetrics,
   formatTrendDelta,
+  repositoryMetricForSort,
   sortRepositories,
 } = sandbox.module.exports;
 const normalize = (value) => JSON.parse(JSON.stringify(value));
@@ -256,6 +257,18 @@ assert.deepEqual(normalize(sortRepositories(sortableRepositories, "gained").map(
   "owner/high-stars",
   "owner/low-gain",
 ]);
+assert.deepEqual(normalize(repositoryMetricForSort(repository, "ranking")), {
+  label: "Stars",
+  value: "15.4k",
+});
+assert.deepEqual(normalize(repositoryMetricForSort(repository, "stars")), {
+  label: "Stars",
+  value: "15.4k",
+});
+assert.deepEqual(normalize(repositoryMetricForSort(repository, "gained")), {
+  label: "新增 Stars",
+  value: "+640",
+});
 assert.match(homePageSource, /repository\.tags\.map/);
 assert.match(homePageSource, /repository\.summary/);
 assert.match(homePageSource, /sortRepositories/);

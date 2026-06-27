@@ -56,15 +56,11 @@ def build_repository_chinese_content(
 ) -> tuple[str, str]:
     original = (description or "").strip()
     if original and contains_chinese(original):
-        description_zh = (
-            f"功能：{original}"
-            "点评：项目定位可以直接从原始说明理解，建议结合技术栈、活跃度和源码结构判断是否适合深入使用或拆解。"
-        )
-        return original, description_zh
+        return original, f"功能：{original}"
 
     searchable = f"{name} {original}".lower()
-    function = "用于实现原始说明所描述的核心软件能力"
-    commentary = "适合先结合原始说明和源码结构判断具体用途，再评估集成成本与学习价值"
+    function = "具体功能暂未完成中文归纳"
+    commentary = ""
     for keywords, matched_function, matched_commentary in CONTENT_PROFILES:
         if any(keyword in searchable for keyword in keywords):
             function = matched_function
@@ -72,11 +68,11 @@ def build_repository_chinese_content(
             break
 
     language = primary_language or "多种技术"
-    summary = f"{function}。{commentary}。"
-    description_zh = (
-        f"功能：{name} {function}，主要使用 {language} 开发。"
-        f"点评：{commentary}。"
-    )
+    summary = f"{function}。"
+    description_zh = f"功能：{name} {function}，主要使用 {language} 开发。"
+    if commentary:
+        summary = f"{summary}{commentary}。"
+        description_zh = f"{description_zh}点评：{commentary}。"
     return summary, description_zh
 
 

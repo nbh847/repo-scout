@@ -59,7 +59,7 @@ class RepositoryChineseContentTest(unittest.TestCase):
 
         self.assertEqual(summary, original)
         self.assertIn(f"功能：{original}", description)
-        self.assertIn("点评：", description)
+        self.assertNotIn("点评：", description)
 
     def test_describes_markitdown_function_and_adds_commentary(self) -> None:
         summary, description = build_repository_chinese_content(
@@ -86,6 +86,17 @@ class RepositoryChineseContentTest(unittest.TestCase):
         self.assertIn("即时通信与隐私", summary)
         self.assertNotIn("开源项目的开源项目", summary)
         self.assertIn("Haskell", description)
+
+    def test_omits_generic_commentary_when_function_is_unknown(self) -> None:
+        summary, description = build_repository_chinese_content(
+            name="unknown-project",
+            description="An experimental project.",
+            primary_language="Rust",
+        )
+
+        self.assertNotIn("集成成本与学习价值", summary)
+        self.assertNotIn("集成成本与学习价值", description)
+        self.assertNotIn("点评：", description)
 
     def test_ingestion_persists_chinese_content(self) -> None:
         engine = create_engine("sqlite:///:memory:")

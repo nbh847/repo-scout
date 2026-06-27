@@ -5,7 +5,7 @@ import unittest
 from contextlib import redirect_stdout
 from http.client import IncompleteRead
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, sentinel
 from urllib.error import URLError
 
 from sqlalchemy import create_engine, inspect, text
@@ -55,6 +55,8 @@ class RepositoryChineseContentTest(unittest.TestCase):
         output = io.StringIO()
 
         with (
+            patch("app.repository_content.Base.metadata.create_all") as create_all,
+            patch.object(repository_content, "engine", sentinel.engine),
             patch.object(
                 repository_content,
                 "SessionLocal",
@@ -69,6 +71,7 @@ class RepositoryChineseContentTest(unittest.TestCase):
         ):
             repository_content.main()
 
+        create_all.assert_called_once_with(bind=sentinel.engine)
         session_local.assert_called_once_with()
         backfill.assert_called_once_with(db, force=True)
         self.assertEqual(

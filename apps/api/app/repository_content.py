@@ -72,7 +72,7 @@ def build_repository_chinese_content(
             break
 
     language = primary_language or "多种技术"
-    summary = f"{name} 是一个开源项目，{function}。{commentary}。"
+    summary = f"{function}。{commentary}。"
     description_zh = (
         f"功能：{name} {function}，主要使用 {language} 开发。"
         f"点评：{commentary}。"

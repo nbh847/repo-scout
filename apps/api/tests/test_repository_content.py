@@ -45,7 +45,6 @@ class RepositoryChineseContentTest(unittest.TestCase):
             primary_language="Python",
         )
 
-        self.assertIn("agent-kit", summary)
         self.assertIn("AI Agent", summary)
         self.assertIn("Python", description)
 
@@ -71,6 +70,7 @@ class RepositoryChineseContentTest(unittest.TestCase):
 
         self.assertIn("将文件和 Office 文档转换为 Markdown", summary)
         self.assertIn("文档预处理", summary)
+        self.assertNotIn("是一个开源项目", summary)
         self.assertIn("功能：", description)
         self.assertIn("文档预处理", description)
         self.assertIn("点评：", description)

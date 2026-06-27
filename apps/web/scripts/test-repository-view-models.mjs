@@ -271,6 +271,8 @@ assert.deepEqual(normalize(repositoryMetricForSort(repository, "gained")), {
 });
 assert.match(homePageSource, /repository\.tags\.map/);
 assert.match(homePageSource, /repository\.summary/);
+assert.match(homePageSource, /key=\{`\$\{project\.collectionSlug\}:\$\{project\.repo\}`\}/);
+assert.doesNotMatch(homePageSource, /key=\{project\.repo\}/);
 assert.match(homePageSource, /sortRepositories/);
 assert.match(homePageSource, /RankingSortControl/);
 assert.match(homePageSource, /TrendingIngestionPanel/);

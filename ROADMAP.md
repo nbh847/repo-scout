@@ -84,6 +84,7 @@
 - 首页练手项目卡片改为展示持久化中文摘要，项目详情页同时展示中文说明和 GitHub 原始说明。
 - 增加已有 SQLite 数据库的幂等中文内容字段迁移与回填，新抓取项目自动生成中文摘要和说明。
 - 修正首页项目卡片指标：榜单排名和 Stars 排序显示总 Stars，新增 Stars 排序显示周期新增量。
+- 修复同一仓库进入多个精选专题时首页右侧卡片 React key 重复报错。
 
 ## 进行中
 
@@ -231,3 +232,4 @@
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和运行页面输出检查，验证项目卡片星形难度标记。
 - 2026-06-27：已通过 33 项后端测试、前端测试、lint、typecheck、build、SQLite 实库迁移回填和临时数据库运行态脚本，验证首页中文摘要与详情页中英文说明展示。
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和三个排序页面输出检查，验证卡片 Stars 指标随排序模式正确切换。
+- 2026-06-27：已确认精选接口存在合法的跨专题重复仓库，并通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证精选卡片复合 key 修复。

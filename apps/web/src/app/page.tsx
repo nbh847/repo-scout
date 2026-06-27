@@ -409,7 +409,7 @@ export default async function Home({ searchParams }: HomeProps) {
             <div className="mt-6 grid gap-5">
               {sidebarProjects.map((project) => (
                 <article
-                  key={project.repo}
+                  key={`${project.collectionSlug}:${project.repo}`}
                   className="rounded-lg border border-[#254a76] bg-[#172b50]/90 p-5 shadow-terminal"
                 >
                   {project.collectionSlug ? (

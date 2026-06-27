@@ -237,6 +237,9 @@ assert.deepEqual(normalize(sortRepositories(sortableRepositories, "gained").map(
 ]);
 assert.match(homePageSource, /repository\.tags\.map/);
 assert.match(homePageSource, /sortRepositories/);
+assert.match(homePageSource, /aria-label="榜单排序"/);
+assert.match(homePageSource, /aria-current=\{sort === filter\.value \? "page" : undefined\}/);
+assert.doesNotMatch(homePageSource, /\{activeSortLabel\}/);
 assert.match(homePageSource, /清除筛选/);
 assert.match(homePageSource, /href="\/#ranking"/);
 assert.match(homePageSource, /returnHref/);

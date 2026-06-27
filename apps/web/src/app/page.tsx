@@ -156,7 +156,6 @@ export default async function Home({ searchParams }: HomeProps) {
   const repositories: RepositoryViewModel[] = sortRepositories(repositoryResult.data ?? [], sort).map((repository, index) =>
     buildRepositoryViewModel(repository, index),
   );
-  const activeSortLabel = sortFilters.find((filter) => filter.value === sort)?.label ?? "榜单排名";
   const returnHref = buildHomeReturnHref(query, period, language, sort);
   const featuredProjects = buildFeaturedProjects(featuredResult.data);
   const metrics = buildMetrics(repositories);
@@ -224,7 +223,7 @@ export default async function Home({ searchParams }: HomeProps) {
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-9">
           <div>
             <form id="ranking" action="/" className="scroll-mt-8 grid gap-4">
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_230px]">
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_310px]">
                 <label
                   className="flex min-h-14 items-center gap-4 rounded-lg border border-[#244169] bg-[#10213d]/90 px-5 shadow-terminal"
                   aria-label="搜索 GitHub 项目"
@@ -240,23 +239,27 @@ export default async function Home({ searchParams }: HomeProps) {
                   {language ? <input type="hidden" name="language" value={language} /> : null}
                   {sort !== "ranking" ? <input type="hidden" name="sort" value={sort} /> : null}
                 </label>
-                <div className="grid min-h-14 gap-3 rounded-lg border border-[#244169] bg-[#10213d]/90 px-4 py-3 text-sm font-bold text-muted shadow-terminal">
-                  <div className="flex items-center justify-between gap-3">
-                    <span>排序</span>
-                    <span className="flex items-center gap-2 text-cyan">
-                      {activeSortLabel}
-                      <SlidersHorizontal size={17} aria-hidden="true" />
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
+                <div
+                  className="flex min-h-14 items-center gap-1.5 rounded-lg border border-[#244169] bg-[#10213d]/90 p-1.5 shadow-terminal"
+                  role="group"
+                  aria-label="榜单排序"
+                >
+                  <span
+                    className="grid h-10 w-10 shrink-0 place-items-center text-muted"
+                    title="榜单排序"
+                  >
+                    <SlidersHorizontal size={18} aria-hidden="true" />
+                  </span>
+                  <div className="grid min-w-0 flex-1 grid-cols-3 gap-1">
                     {sortFilters.map((filter) => (
                       <Link
                         key={filter.value}
                         href={buildHomeFilterHref(period, language, filter.value)}
-                        className={`inline-flex h-8 min-w-0 items-center justify-center rounded-md border px-2 text-xs font-black transition ${
+                        aria-current={sort === filter.value ? "page" : undefined}
+                        className={`inline-flex h-10 min-w-0 items-center justify-center rounded-md px-2 text-xs font-black transition ${
                           sort === filter.value
-                            ? "border-cyan bg-cyan/15 text-cyan"
-                            : "border-[#244169] bg-[#17213d] text-muted hover:text-ink"
+                            ? "bg-cyan text-[#071321] shadow-[0_0_16px_rgba(34,211,238,0.2)]"
+                            : "text-muted hover:bg-[#172b50] hover:text-ink"
                         }`}
                       >
                         {filter.label}

@@ -75,6 +75,7 @@
 - 增加本地运行数据未被 Git 跟踪的发布前检查，防止 SQLite 数据库文件进入版本控制。
 - 增加敏感文件未被 Git 跟踪的发布前检查，覆盖 `.env`、密钥和证书类文件。
 - 增加网站运行态验收脚本，自动启动临时 API/Web 服务并检查首页、详情页、专题页、排序页和语言筛选页。
+- 优化首页榜单排序切换控件，改为紧凑的等宽分段选择并强化选中状态。
 
 ## 进行中
 
@@ -214,3 +215,4 @@
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `scripts/validate-runtime.sh` 验证首页空结果清除筛选入口。
 - 2026-06-26：已将脚本化运行验收结果补充到 `docs/runtime-acceptance.md`。
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `scripts/validate-runtime.sh` 验证详情页返回榜单上下文。
+- 2026-06-27：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证首页榜单排序切换控件优化。

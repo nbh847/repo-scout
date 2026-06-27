@@ -46,6 +46,7 @@ export type FeaturedProjectViewModel = {
   repo: string;
   reason: string;
   score: string;
+  stars: string;
 };
 
 export type RelatedProjectViewModel = {
@@ -201,6 +202,7 @@ export function buildFeaturedProjects(collections: ApiFeaturedCollection[] | nul
         repo: repository.full_name,
         reason: repository.reason,
         score: ((repository.beginner_score + repository.learning_value_score) / 2).toFixed(1),
+        stars: formatCount(repository.stars),
       },
     ];
   });

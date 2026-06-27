@@ -115,6 +115,7 @@ assert.deepEqual(
           {
             ...repository,
             full_name: "openai/agents",
+            stars: 15420,
             reason: "Agent workflow pick.",
             beginner_score: 4,
             learning_value_score: 5,
@@ -122,6 +123,7 @@ assert.deepEqual(
           {
             ...repository,
             full_name: "openai/second-agent",
+            stars: 15420,
             reason: "Second pick.",
             beginner_score: 5,
             learning_value_score: 5,
@@ -135,6 +137,7 @@ assert.deepEqual(
           {
             ...fallbackRepository,
             full_name: "example/llm-tool",
+            stars: 0,
             reason: "LLM tool pick.",
             beginner_score: 3,
             learning_value_score: 4,
@@ -150,6 +153,7 @@ assert.deepEqual(
       repo: "openai/agents",
       reason: "Agent workflow pick.",
       score: "4.5",
+      stars: "15.4k",
     },
     {
       title: "LLM 工具",
@@ -157,6 +161,7 @@ assert.deepEqual(
       repo: "example/llm-tool",
       reason: "LLM tool pick.",
       score: "3.5",
+      stars: "0",
     },
   ],
 );

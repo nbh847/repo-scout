@@ -172,7 +172,8 @@ export default async function Home({ searchParams }: HomeProps) {
             collectionSlug: "",
             repo: repository.fullName,
             reason: repository.description,
-          score: repository.gained,
+            score: repository.gained,
+            stars: repository.stars,
         }));
 
   return (
@@ -415,11 +416,11 @@ export default async function Home({ searchParams }: HomeProps) {
                   <div className="mt-4 flex items-center gap-4 font-mono text-sm font-bold text-muted">
                     <span className="flex items-center gap-1.5">
                       <Star size={16} className="text-amber" aria-hidden="true" />
-                      {project.score}
+                      {project.stars}
                     </span>
                     <span className="flex items-center gap-1.5 text-orange-400">
                       <Flame size={16} aria-hidden="true" />
-                      Top pick
+                      {project.collectionSlug ? `AI 评分 ${project.score}` : `增长 ${project.score}`}
                     </span>
                   </div>
                   <Link

@@ -333,7 +333,7 @@ export default async function Home({ searchParams }: HomeProps) {
                   </div>
 
                   <p className="mt-4 line-clamp-3 min-h-[72px] text-sm font-semibold leading-6 text-muted">
-                    {repository.description}
+                    {repository.summary}
                   </p>
                   <div className="mt-3 flex min-h-[32px] flex-wrap gap-2">
                     {repository.tags.map((tag) => (

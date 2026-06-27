@@ -9,6 +9,8 @@ class RepositoryOut(BaseModel):
     full_name: str
     url: str
     description: str | None
+    summary_zh: str | None
+    description_zh: str | None
     primary_language: str | None
     topics: list[str]
     stars: int

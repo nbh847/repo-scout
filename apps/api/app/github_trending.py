@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from .database import Base, SessionLocal, engine
 from .models import Repository, RepositorySnapshot, TrendingRun
+from .repository_content import build_repository_chinese_content
 
 
 GITHUB_TRENDING_BASE_URL = "https://github.com/trending"
@@ -159,6 +160,11 @@ def ingest_trending_repositories(
     try:
         for item in repositories:
             full_name = f"{item.owner}/{item.name}"
+            summary_zh, description_zh = build_repository_chinese_content(
+                item.name,
+                item.description,
+                item.primary_language,
+            )
             repository = db.scalar(
                 select(Repository).where(Repository.full_name == full_name)
             )
@@ -169,6 +175,8 @@ def ingest_trending_repositories(
                     full_name=full_name,
                     url=item.url,
                     description=item.description,
+                    summary_zh=summary_zh,
+                    description_zh=description_zh,
                     primary_language=item.primary_language,
                     topics_json=None,
                     stars=item.stars,
@@ -179,6 +187,8 @@ def ingest_trending_repositories(
             else:
                 repository.url = item.url
                 repository.description = item.description
+                repository.summary_zh = summary_zh
+                repository.description_zh = description_zh
                 repository.primary_language = item.primary_language
                 repository.stars = item.stars
                 repository.forks = item.forks

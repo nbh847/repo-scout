@@ -25,6 +25,8 @@ class Repository(Base):
     full_name: Mapped[str] = mapped_column(String(300), unique=True)
     url: Mapped[str] = mapped_column(String(500))
     description: Mapped[str | None] = mapped_column(Text)
+    summary_zh: Mapped[str | None] = mapped_column(Text)
+    description_zh: Mapped[str | None] = mapped_column(Text)
     primary_language: Mapped[str | None] = mapped_column(String(80))
     topics_json: Mapped[str | None] = mapped_column(Text)
     stars: Mapped[int] = mapped_column(Integer, default=0)

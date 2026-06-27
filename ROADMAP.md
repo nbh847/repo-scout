@@ -81,6 +81,8 @@
 - GitHub 数据同步按周期设置抓取数量：日榜 20 个、周榜 30 个、月榜 50 个。
 - 首页右侧明星项目卡片展示仓库总 Stars，并将 AI 评分与 Stars 指标明确区分。
 - 首页项目卡片使用星形图标展示难度等级，替换原有圆点标记。
+- 首页练手项目卡片改为展示持久化中文摘要，项目详情页同时展示中文说明和 GitHub 原始说明。
+- 增加已有 SQLite 数据库的幂等中文内容字段迁移与回填，新抓取项目自动生成中文摘要和说明。
 
 ## 进行中
 
@@ -226,3 +228,4 @@
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和三个周期页面输出检查，验证日榜、周榜、月榜分别计划抓取 20、30、50 个项目。
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和运行页面输出检查，验证右侧明星项目卡片同时展示 Stars 总量和 AI 评分。
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和运行页面输出检查，验证项目卡片星形难度标记。
+- 2026-06-27：已通过 33 项后端测试、前端测试、lint、typecheck、build、SQLite 实库迁移回填和临时数据库运行态脚本，验证首页中文摘要与详情页中英文说明展示。

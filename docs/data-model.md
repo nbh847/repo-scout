@@ -25,6 +25,8 @@ MVP 阶段的数据模型要支撑四件事：
 | `full_name` | text | `owner/name` |
 | `url` | text | GitHub 仓库地址 |
 | `description` | text | 仓库描述 |
+| `summary_zh` | text | 首页卡片使用的中文项目摘要 |
+| `description_zh` | text | 详情页使用的中文项目说明 |
 | `primary_language` | text | 主要语言 |
 | `topics_json` | text | topics JSON 字符串 |
 | `stars` | integer | 当前 stars 数 |
@@ -36,6 +38,13 @@ MVP 阶段的数据模型要支撑四件事：
 
 - `full_name` 唯一。
 - `owner + name` 唯一。
+
+中文内容策略：
+
+- 抓取入库时同步生成 `summary_zh` 和 `description_zh`。
+- 原始说明已经包含中文时，中文字段直接保留原文。
+- 未配置模型时，根据仓库名、原始说明关键词和主要语言生成稳定的本地中文概述。
+- 详情页保留 `description` 原文，并与 `description_zh` 同时展示。
 
 索引：
 

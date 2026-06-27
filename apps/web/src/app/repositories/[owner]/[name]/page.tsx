@@ -144,7 +144,7 @@ export default async function RepositoryDetailPage({ params, searchParams }: Rep
               {repository.fullName}
             </h1>
             <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-muted md:mt-5 md:text-lg md:leading-8">
-              {repository.description}
+              {repository.summary}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {repository.tags.map((tag) => (
@@ -156,6 +156,21 @@ export default async function RepositoryDetailPage({ params, searchParams }: Rep
                 </span>
               ))}
             </div>
+
+            <section className="mt-6 rounded-lg border border-[#254a76] bg-[#172b50]/90 p-5 shadow-terminal md:mt-8 md:p-6">
+              <h2 className="text-xl font-black text-ink sm:text-2xl">项目说明</h2>
+              <p className="mt-4 text-sm font-semibold leading-7 text-muted sm:text-base md:leading-8">
+                {repository.descriptionZh}
+              </p>
+              {repository.description !== repository.descriptionZh ? (
+                <div className="mt-5 border-t border-[#254a76] pt-5">
+                  <p className="text-xs font-black uppercase text-cyan">原始说明</p>
+                  <p className="mt-2 text-sm font-semibold leading-7 text-muted sm:text-base md:leading-8">
+                    {repository.description}
+                  </p>
+                </div>
+              ) : null}
+            </section>
 
             <section className="mt-6 rounded-lg border border-[#254a76] bg-[#172b50]/90 p-5 shadow-terminal md:mt-8 md:p-6">
               <div className="flex items-center gap-3">

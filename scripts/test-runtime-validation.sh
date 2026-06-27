@@ -22,6 +22,8 @@ assert_contains "$SCRIPT_CONTENT" "node_modules/.bin/next\" dev -H 127.0.0.1 -p 
 assert_contains "$SCRIPT_CONTENT" "trap cleanup EXIT" "scripts/validate-runtime.sh"
 assert_contains "$SCRIPT_CONTENT" "/api/repositories/trending?limit=3&period=daily" "scripts/validate-runtime.sh"
 assert_contains "$SCRIPT_CONTENT" "/repositories/langchain-ai/langchain" "scripts/validate-runtime.sh"
+assert_contains "$SCRIPT_CONTENT" "项目说明" "scripts/validate-runtime.sh"
+assert_contains "$SCRIPT_CONTENT" "原始说明" "scripts/validate-runtime.sh"
 assert_contains "$SCRIPT_CONTENT" "from=%2F%3Fperiod%3Ddaily%26sort%3Dgained%23ranking" "scripts/validate-runtime.sh"
 assert_contains "$SCRIPT_CONTENT" "/collections/beginner-friendly-ai" "scripts/validate-runtime.sh"
 assert_contains "$SCRIPT_CONTENT" "?period=daily&sort=gained" "scripts/validate-runtime.sh"

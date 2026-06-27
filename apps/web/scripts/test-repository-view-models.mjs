@@ -59,6 +59,8 @@ const repository = buildRepositoryViewModel({
   full_name: "openai/agents",
   url: "https://github.com/openai/agents",
   description: "Agent framework for production apps",
+  summary_zh: "一个用于构建生产级 AI Agent 的开源框架。",
+  description_zh: "该项目提供构建生产级 AI Agent 所需的工作流和工具。",
   primary_language: "Python",
   topics: ["agents", "llm"],
   stars: 15420,
@@ -73,6 +75,8 @@ assert.deepEqual(normalize(repository), {
   fullName: "openai/agents",
   url: "https://github.com/openai/agents",
   description: "Agent framework for production apps",
+  summary: "一个用于构建生产级 AI Agent 的开源框架。",
+  descriptionZh: "该项目提供构建生产级 AI Agent 所需的工作流和工具。",
   language: "Python",
   stars: "15.4k",
   forks: "930",
@@ -88,6 +92,8 @@ const fallbackRepository = buildRepositoryViewModel({
   full_name: "example/tool",
   url: "https://github.com/example/tool",
   description: null,
+  summary_zh: null,
+  description_zh: null,
   primary_language: null,
   topics: [],
   stars: 0,
@@ -96,6 +102,8 @@ const fallbackRepository = buildRepositoryViewModel({
 });
 
 assert.equal(fallbackRepository.description, "No description provided.");
+assert.equal(fallbackRepository.summary, "暂无中文摘要。");
+assert.equal(fallbackRepository.descriptionZh, "暂无中文说明。");
 assert.equal(fallbackRepository.language, "Unknown");
 assert.equal(fallbackRepository.gained, "+0");
 assert.equal(fallbackRepository.fit, "General");
@@ -249,6 +257,7 @@ assert.deepEqual(normalize(sortRepositories(sortableRepositories, "gained").map(
   "owner/low-gain",
 ]);
 assert.match(homePageSource, /repository\.tags\.map/);
+assert.match(homePageSource, /repository\.summary/);
 assert.match(homePageSource, /sortRepositories/);
 assert.match(homePageSource, /RankingSortControl/);
 assert.match(homePageSource, /TrendingIngestionPanel/);
@@ -268,3 +277,5 @@ assert.match(detailPageSource, /featured_collection_slug/);
 assert.match(detailPageSource, /buildCollectionHref/);
 assert.match(detailPageSource, /searchParams/);
 assert.match(detailPageSource, /返回榜单/);
+assert.match(detailPageSource, /repository\.descriptionZh/);
+assert.match(detailPageSource, /原始说明/);

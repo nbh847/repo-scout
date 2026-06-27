@@ -5,6 +5,8 @@ export type ApiRepository = {
   full_name: string;
   url: string;
   description: string | null;
+  summary_zh: string | null;
+  description_zh: string | null;
   primary_language: string | null;
   topics: string[];
   stars: number;
@@ -19,6 +21,8 @@ export type RepositoryViewModel = {
   fullName: string;
   url: string;
   description: string;
+  summary: string;
+  descriptionZh: string;
   language: string;
   stars: string;
   forks: string;
@@ -146,6 +150,8 @@ export function buildRepositoryViewModel(
     fullName: repository.full_name,
     url: repository.url,
     description: repository.description ?? "No description provided.",
+    summary: repository.summary_zh ?? "暂无中文摘要。",
+    descriptionZh: repository.description_zh ?? "暂无中文说明。",
     language,
     stars: formatCount(repository.stars),
     forks: formatCount(repository.forks),

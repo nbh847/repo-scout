@@ -10,6 +10,8 @@ from .database import Base, SessionLocal, engine, get_db
 from .curation import curate_featured_collections
 from .github_trending import VALID_PERIODS, ingest_github_trending
 from .models import FeaturedCollection, FeaturedRepository, Repository, RepositorySnapshot, TrendingRun
+from .migrations import ensure_repository_content_columns
+from .repository_content import backfill_repository_chinese_content
 from .scheduler import TrendingIngestionScheduler, trending_ingestion_lock
 from .schemas import (
     FeaturedCollectionOut,
@@ -29,8 +31,10 @@ trending_scheduler: TrendingIngestionScheduler | None = None
 @app.on_event("startup")
 def startup() -> None:
     Base.metadata.create_all(bind=engine)
+    ensure_repository_content_columns(engine)
     with SessionLocal() as db:
         seed_database(db)
+        backfill_repository_chinese_content(db)
     start_trending_scheduler_from_env()
 
 
@@ -71,6 +75,8 @@ def repository_out(repository: Repository) -> RepositoryOut:
         full_name=repository.full_name,
         url=repository.url,
         description=repository.description,
+        summary_zh=repository.summary_zh,
+        description_zh=repository.description_zh,
         primary_language=repository.primary_language,
         topics=parse_topics(repository.topics_json),
         stars=repository.stars,

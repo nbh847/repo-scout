@@ -69,7 +69,7 @@ scripts/local-demo.sh --real --period weekly --language Python --limit 20
 scripts/local-demo.sh --sample
 ```
 
-演示脚本会自动加载项目根目录的 `.env.local`，该文件已被 Git 忽略。需要为规则未命中的英文仓库简介启用 GLM 时，可以写入：
+演示脚本会自动加载项目根目录的 `.env.local`，该文件已被 Git 忽略。需要为英文简介摘要和 AI 精选理由启用 GLM 时，可以写入：
 
 ```dotenv
 REPO_SCOUT_OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4
@@ -77,7 +77,7 @@ REPO_SCOUT_OPENAI_API_KEY=your-api-key
 REPO_SCOUT_OPENAI_MODEL=glm-4.7
 ```
 
-模型只用于生成未命中本地规则的英文简介；不要把真实 API Key 提交到仓库。
+GLM 同时用于生成未命中本地规则的英文简介摘要与 AI 精选理由。不配置模型或调用失败时，会分别回退到原简介或本地模板理由。不要把真实 API Key 提交到仓库。
 
 演示脚本会写入本地 SQLite 数据、生成 AI 精选专题，并启动：
 

@@ -5,6 +5,16 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HELP_OUTPUT="$("$ROOT_DIR/scripts/local-demo.sh" --help)"
 SCRIPT_CONTENT="$(cat "$ROOT_DIR/scripts/local-demo.sh")"
 README_CONTENT="$(cat "$ROOT_DIR/README.md")"
+FIXTURE_DIR="$(mktemp -d)"
+mkdir -p "$FIXTURE_DIR/scripts"
+cp "$ROOT_DIR/scripts/local-demo.sh" "$FIXTURE_DIR/scripts/local-demo.sh"
+export REPO_SCOUT_TEST_CAPTURE="$FIXTURE_DIR/capture"
+cat > "$FIXTURE_DIR/.env.local" <<'EOF'
+REPO_SCOUT_TEST_EXPORTED=loaded
+sh -c 'printf "%s" "$REPO_SCOUT_TEST_EXPORTED" > "$REPO_SCOUT_TEST_CAPTURE"'
+EOF
+"$FIXTURE_DIR/scripts/local-demo.sh" --help >/dev/null
+EXPORTED_VALUE="$(cat "$REPO_SCOUT_TEST_CAPTURE")"
 
 assert_contains() {
   local content="$1"
@@ -24,6 +34,7 @@ assert_contains "$SCRIPT_CONTENT" 'if [[ -f "$ROOT_DIR/.env.local" ]]; then' "lo
 assert_contains "$SCRIPT_CONTENT" "set -a" "local-demo script"
 assert_contains "$SCRIPT_CONTENT" 'source "$ROOT_DIR/.env.local"' "local-demo script"
 assert_contains "$SCRIPT_CONTENT" "set +a" "local-demo script"
+assert_contains "$EXPORTED_VALUE" "loaded" "environment inherited by subprocess"
 assert_contains "$README_CONTENT" "scripts/local-demo.sh --real --period daily --limit 20" "README.md"
 assert_contains "$README_CONTENT" "scripts/local-demo.sh --real --period weekly --language Python --limit 20" "README.md"
 assert_contains "$README_CONTENT" "npm run ingest:trending -- --period daily --limit 20" "README.md"
@@ -32,3 +43,5 @@ assert_contains "$README_CONTENT" "npm run curate:featured -- --limit 5" "README
 assert_contains "$README_CONTENT" "REPO_SCOUT_OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4" "README.md"
 assert_contains "$README_CONTENT" "REPO_SCOUT_OPENAI_API_KEY=your-api-key" "README.md"
 assert_contains "$README_CONTENT" "REPO_SCOUT_OPENAI_MODEL=glm-4.7" "README.md"
+assert_contains "$README_CONTENT" "英文简介摘要与 AI 精选理由" "README.md"
+assert_contains "$README_CONTENT" "回退到原简介或本地模板理由" "README.md"

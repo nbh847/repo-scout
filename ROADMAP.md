@@ -87,6 +87,7 @@
 - 修复同一仓库进入多个精选专题时首页右侧卡片 React key 重复报错。
 - 首页练手项目卡片支持每页 6 条翻页，保留关键词、周期、语言和排序上下文，并按周期读取最多 20/30/50 条榜单数据。
 - 项目详情页和首页 GitHub 外链按钮改为在新标签页打开。
+- 中文项目内容统一为“项目功能 + 简短点评”，并补充文档转换类项目识别，避免只展示宽泛技术分类。
 
 ## 进行中
 
@@ -237,3 +238,4 @@
 - 2026-06-27：已确认精选接口存在合法的跨专题重复仓库，并通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证精选卡片复合 key 修复。
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和本地第 1/2 页、排序分页组合页面检查，验证首页项目翻页和详情返回上下文。
 - 2026-06-27：已通过前端测试、lint、typecheck 和运行页面外链属性检查，验证 GitHub 按钮新标签页打开。
+- 2026-06-27：已通过 34 项后端测试和本地 API/页面检查，验证 `microsoft/markitdown` 中文摘要明确说明文件与 Office 文档转 Markdown 的功能，并包含文档预处理和 AI/RAG 使用价值点评。

@@ -6,36 +6,41 @@ from sqlalchemy.orm import Session
 from .models import Repository
 
 
-CONTENT_CATEGORIES = (
+CONTENT_PROFILES = (
+    (
+        ("convert", "conversion", "markdown", "office document"),
+        "用于将文件和 Office 文档转换为 Markdown",
+        "适合文档预处理、内容提取，以及为 AI/RAG 工作流准备结构化文本",
+    ),
     (
         ("messaging", "chat", "private", "privacy", "ios", "android"),
-        "即时通信与隐私",
-        "跨平台通信、隐私保护和客户端设计",
+        "用于构建注重即时通信与隐私保护的跨平台通信网络",
+        "适合研究无中心身份标识的通信设计、隐私保护和多端客户端实现",
     ),
     (
         ("agent", "llm", "rag", "retrieval", "prompt", "model"),
-        "AI Agent 与大模型应用",
-        "智能体、模型调用和知识检索",
-    ),
-    (
-        ("cli", "sdk", "api", "framework", "library", "developer", "toolkit"),
-        "开发工具",
-        "开发流程、工具集成和工程效率",
+        "用于构建 AI Agent 与大模型应用",
+        "适合了解智能体编排、模型调用、工具使用和知识检索的工程实现",
     ),
     (
         ("database", "data", "storage", "analytics"),
-        "数据处理",
-        "数据存储、处理和分析",
-    ),
-    (
-        ("web", "frontend", "ui", "dashboard"),
-        "Web 应用",
-        "Web 产品构建和界面交互",
+        "用于处理、存储或分析数据",
+        "适合研究数据建模、处理流程和性能优化方式",
     ),
     (
         ("security", "vulnerability", "scanner"),
-        "安全工具",
-        "安全检测、分析和防护",
+        "用于安全检测、漏洞分析或风险防护",
+        "适合了解安全工具的检测策略、规则组织和工程落地",
+    ),
+    (
+        ("web", "frontend", "ui", "dashboard"),
+        "用于构建 Web 应用或交互界面",
+        "适合拆解前端架构、界面交互和 Web 产品工程实践",
+    ),
+    (
+        ("cli", "sdk", "api", "framework", "library", "developer", "toolkit"),
+        "用于支持软件开发、工具集成或工程自动化",
+        "适合了解开发工具的接口设计、扩展机制和工程效率优化",
     ),
 )
 
@@ -51,22 +56,26 @@ def build_repository_chinese_content(
 ) -> tuple[str, str]:
     original = (description or "").strip()
     if original and contains_chinese(original):
-        return original, original
+        description_zh = (
+            f"功能：{original}"
+            "点评：项目定位可以直接从原始说明理解，建议结合技术栈、活跃度和源码结构判断是否适合深入使用或拆解。"
+        )
+        return original, description_zh
 
     searchable = f"{name} {original}".lower()
-    category = "通用软件"
-    focus = "项目的核心能力、实现方式和使用场景"
-    for keywords, matched_category, matched_focus in CONTENT_CATEGORIES:
+    function = "用于实现原始说明所描述的核心软件能力"
+    commentary = "适合先结合原始说明和源码结构判断具体用途，再评估集成成本与学习价值"
+    for keywords, matched_function, matched_commentary in CONTENT_PROFILES:
         if any(keyword in searchable for keyword in keywords):
-            category = matched_category
-            focus = matched_focus
+            function = matched_function
+            commentary = matched_commentary
             break
 
     language = primary_language or "多种技术"
-    summary = f"{name} 是一个面向{category}的开源项目，适合了解{focus}。"
+    summary = f"{name} 是一个开源项目，{function}。{commentary}。"
     description_zh = (
-        f"{name} 主要使用 {language} 开发，聚焦{focus}。"
-        "可结合下方原始说明进一步了解项目的具体能力和使用方式。"
+        f"功能：{name} {function}，主要使用 {language} 开发。"
+        f"点评：{commentary}。"
     )
     return summary, description_zh
 

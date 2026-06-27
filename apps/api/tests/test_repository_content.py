@@ -59,7 +59,22 @@ class RepositoryChineseContentTest(unittest.TestCase):
         )
 
         self.assertEqual(summary, original)
-        self.assertEqual(description, original)
+        self.assertIn(f"功能：{original}", description)
+        self.assertIn("点评：", description)
+
+    def test_describes_markitdown_function_and_adds_commentary(self) -> None:
+        summary, description = build_repository_chinese_content(
+            name="markitdown",
+            description="Python tool for converting files and office documents to Markdown.",
+            primary_language="Python",
+        )
+
+        self.assertIn("将文件和 Office 文档转换为 Markdown", summary)
+        self.assertIn("文档预处理", summary)
+        self.assertIn("功能：", description)
+        self.assertIn("文档预处理", description)
+        self.assertIn("点评：", description)
+        self.assertIn("AI/RAG", description)
 
     def test_identifies_private_messaging_repository(self) -> None:
         summary, description = build_repository_chinese_content(

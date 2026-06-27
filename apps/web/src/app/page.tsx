@@ -365,10 +365,18 @@ export default async function Home({ searchParams }: HomeProps) {
                   </div>
 
                   <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5 text-sm font-bold text-muted">
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-1.5" aria-label="难度 2/5">
                       难度
-                      <span className="text-orange-400">●●</span>
-                      <span className="text-[#2a3e5f]">●●●</span>
+                      <span className="flex items-center gap-0.5" aria-hidden="true">
+                        {[0, 1, 2, 3, 4].map((index) => (
+                          <Star
+                            key={index}
+                            size={13}
+                            fill={index < 2 ? "currentColor" : "none"}
+                            className={index < 2 ? "text-orange-400" : "text-[#2a3e5f]"}
+                          />
+                        ))}
+                      </span>
                     </span>
                     <span className="flex items-center gap-2">
                       <Timer size={15} aria-hidden="true" />

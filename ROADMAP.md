@@ -80,6 +80,7 @@
 - 首页增加 GitHub 数据同步状态区，可手动触发当前榜单抓取，并展示抓取中耗时、成功、失败和最近完成时间。
 - GitHub 数据同步按周期设置抓取数量：日榜 20 个、周榜 30 个、月榜 50 个。
 - 首页右侧明星项目卡片展示仓库总 Stars，并将 AI 评分与 Stars 指标明确区分。
+- 首页项目卡片使用星形图标展示难度等级，替换原有圆点标记。
 
 ## 进行中
 
@@ -224,3 +225,4 @@
 - 2026-06-27：已通过后端 19 项 Trending 测试、前端测试、lint、typecheck 和真实 GitHub Trending 抓取验证首页数据同步状态区；同源触发接口成功生成 run `3`，首页显示最新完成状态。
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和三个周期页面输出检查，验证日榜、周榜、月榜分别计划抓取 20、30、50 个项目。
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和运行页面输出检查，验证右侧明星项目卡片同时展示 Stars 总量和 AI 评分。
+- 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和运行页面输出检查，验证项目卡片星形难度标记。

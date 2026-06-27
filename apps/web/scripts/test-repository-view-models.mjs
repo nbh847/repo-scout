@@ -253,6 +253,8 @@ assert.match(homePageSource, /sortRepositories/);
 assert.match(homePageSource, /RankingSortControl/);
 assert.match(homePageSource, /TrendingIngestionPanel/);
 assert.doesNotMatch(homePageSource, /\{activeSortLabel\}/);
+assert.match(homePageSource, /aria-label="难度 2\/5"/);
+assert.doesNotMatch(homePageSource, /●●/);
 assert.match(ingestionConfigSource, /daily: 20/);
 assert.match(ingestionConfigSource, /weekly: 30/);
 assert.match(ingestionConfigSource, /monthly: 50/);

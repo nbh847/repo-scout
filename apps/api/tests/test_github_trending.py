@@ -22,6 +22,7 @@ from app.github_trending import (
     resolve_ca_file,
 )
 from app.main import (
+    latest_trending_run,
     repository_languages,
     search_repositories,
     trigger_github_trending_ingest,
@@ -482,6 +483,28 @@ class GitHubTrendingAdminEndpointTest(unittest.TestCase):
         self.assertEqual(result.status, "success")
         self.assertEqual(result.period, "weekly")
         self.assertEqual(result.language, "python")
+
+    def test_latest_trending_run_returns_most_recent_run(self) -> None:
+        with Session(self.engine) as db:
+            db.add_all(
+                [
+                    TrendingRun(source="github_trending", period="weekly", status="success"),
+                    TrendingRun(source="github_trending", period="daily", status="failed"),
+                ]
+            )
+            db.commit()
+
+            result = latest_trending_run(db=db)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.period, "daily")
+        self.assertEqual(result.status, "failed")
+
+    def test_latest_trending_run_returns_none_without_runs(self) -> None:
+        with Session(self.engine) as db:
+            result = latest_trending_run(db=db)
+
+        self.assertIsNone(result)
 
     def test_trigger_github_trending_ingest_rejects_non_local_request_without_token(self) -> None:
         request = SimpleNamespace(

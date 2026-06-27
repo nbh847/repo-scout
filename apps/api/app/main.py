@@ -146,6 +146,17 @@ def trigger_github_trending_ingest(
         trending_ingestion_lock.release()
 
 
+@app.get("/api/repositories/trending/status", response_model=TrendingRunOut | None)
+def latest_trending_run(db: Session = Depends(get_db)) -> TrendingRunOut | None:
+    run = db.scalar(
+        select(TrendingRun)
+        .where(TrendingRun.source == "github_trending")
+        .order_by(desc(TrendingRun.id))
+        .limit(1)
+    )
+    return trending_run_out(run) if run else None
+
+
 @app.get("/api/repositories/trending", response_model=list[TrendingRepositoryOut])
 def trending_repositories(
     limit: int = Query(default=20, ge=1, le=100),

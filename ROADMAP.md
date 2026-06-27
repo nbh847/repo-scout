@@ -77,6 +77,7 @@
 - 增加网站运行态验收脚本，自动启动临时 API/Web 服务并检查首页、详情页、专题页、排序页和语言筛选页。
 - 优化首页榜单排序切换控件，改为紧凑的等宽分段选择并强化选中状态。
 - 修复首页榜单排序按钮反馈延迟，点击后立即更新选中状态，不再等待动态页面重新渲染。
+- 首页增加 GitHub 数据同步状态区，可手动触发当前榜单抓取，并展示抓取中耗时、成功、失败和最近完成时间。
 
 ## 进行中
 
@@ -218,3 +219,4 @@
 - 2026-06-26：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和 `scripts/validate-runtime.sh` 验证详情页返回榜单上下文。
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证首页榜单排序切换控件优化。
 - 2026-06-27：已通过本地接口与页面响应计时定位排序延迟，并通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证排序按钮即时反馈修复。
+- 2026-06-27：已通过后端 19 项 Trending 测试、前端测试、lint、typecheck 和真实 GitHub Trending 抓取验证首页数据同步状态区；同源触发接口成功生成 run `3`，首页显示最新完成状态。

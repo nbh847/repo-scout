@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { RankingSortControl } from "./ranking-sort-control";
+import { type TrendingRun, TrendingIngestionPanel } from "./trending-ingestion-panel";
 import {
   type ApiRepository,
   type ApiFeaturedCollection,
@@ -149,9 +150,10 @@ export default async function Home({ searchParams }: HomeProps) {
   const languageFilters = languageResult.data?.length ? languageResult.data : fallbackLanguageFilters;
   const language = readLanguage(params, languageFilters);
   const sort = readSort(params);
-  const [repositoryResult, featuredResult] = await Promise.all([
+  const [repositoryResult, featuredResult, trendingRunResult] = await Promise.all([
     fetchApi<ApiRepository[]>(buildRepositoryApiPath({ query, period, language })),
     fetchApi<ApiFeaturedCollection[]>("/api/featured"),
+    fetchApi<TrendingRun>("/api/repositories/trending/status"),
   ]);
   const repositories: RepositoryViewModel[] = sortRepositories(repositoryResult.data ?? [], sort).map((repository, index) =>
     buildRepositoryViewModel(repository, index),
@@ -280,6 +282,12 @@ export default async function Home({ searchParams }: HomeProps) {
                 ))}
               </div>
             </form>
+
+            <TrendingIngestionPanel
+              initialRun={trendingRunResult.data}
+              period={period}
+              language={language}
+            />
 
             {dataError ? (
               <div className="mt-8 rounded-lg border border-amber/50 bg-amber/10 p-5 text-sm font-semibold text-amber">

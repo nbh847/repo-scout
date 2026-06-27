@@ -2,6 +2,7 @@ import json
 import sys
 from pathlib import Path
 import unittest
+from http.client import IncompleteRead
 from unittest.mock import MagicMock, patch
 from urllib.error import URLError
 
@@ -125,6 +126,32 @@ class RepositoryChineseContentTest(unittest.TestCase):
     def test_falls_back_to_original_description_when_model_request_fails(
         self, urlopen
     ) -> None:
+        original = "An experimental project."
+
+        summary, description = build_repository_chinese_content(
+            name="unknown-project",
+            description=original,
+            primary_language="Rust",
+        )
+
+        self.assertEqual(summary, original)
+        self.assertEqual(description, f"功能：{original}")
+        urlopen.assert_called_once()
+
+    @patch.dict(
+        "os.environ",
+        {
+            "REPO_SCOUT_OPENAI_BASE_URL": "https://open.bigmodel.cn/api/paas/v4",
+            "REPO_SCOUT_OPENAI_API_KEY": "test-api-key",
+            "REPO_SCOUT_OPENAI_MODEL": "glm-4.7",
+        },
+        clear=True,
+    )
+    @patch("app.repository_content.request.urlopen")
+    def test_falls_back_when_model_response_is_incomplete(self, urlopen) -> None:
+        response = MagicMock()
+        response.read.side_effect = IncompleteRead(b'{"choices":', 100)
+        urlopen.return_value.__enter__.return_value = response
         original = "An experimental project."
 
         summary, description = build_repository_chinese_content(

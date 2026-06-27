@@ -116,9 +116,9 @@ def generate_model_summary(
             description=description,
             primary_language=primary_language,
         )
-    except (OSError, ValueError, KeyError, IndexError, TypeError, AttributeError):
-        return None
-    if not summary or not contains_chinese(summary):
+        if not summary or not contains_chinese(summary):
+            return None
+    except Exception:
         return None
     return summary
 

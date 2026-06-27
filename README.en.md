@@ -69,6 +69,8 @@ Use sample data when offline or when you only need a local demo:
 scripts/local-demo.sh --sample
 ```
 
+> Repo Scout **runs fully without any LLM configuration**. AI curation and Chinese summaries default to deterministic rule scoring and local templates. Configuring a model is an optional enhancement — see [Optional: LLM Enhancement](#optional-llm-enhancement).
+
 The demo script writes local SQLite data, generates AI-curated collections, and starts:
 
 - Backend API: `http://127.0.0.1:8000`
@@ -80,6 +82,7 @@ You can also run the steps manually:
 npm run ingest:trending -- --period daily --limit 20
 npm run ingest:trending -- --period weekly --language Python --limit 20
 npm run curate:featured -- --limit 5
+npm run backfill:content   # Regenerate Chinese summaries for existing repos (optional)
 npm run dev:api
 npm run dev:web
 ```
@@ -90,4 +93,31 @@ Run the complete local release validation before delivery:
 scripts/validate-local-release.sh
 ```
 
-The backend uses a local SQLite database by default. The database file is stored in `data/`, which is ignored by git. AI curation defaults to deterministic rule scoring and local template reasons. When `REPO_SCOUT_OPENAI_BASE_URL`, `REPO_SCOUT_OPENAI_API_KEY`, and `REPO_SCOUT_OPENAI_MODEL` are configured together, Repo Scout calls an OpenAI-compatible `chat/completions` endpoint for featured reasons and falls back to local templates on model failures.
+The backend uses a local SQLite database by default. The database file is stored in `data/`, which is ignored by git.
+
+## Optional: LLM Enhancement
+
+Repo Scout's full functionality does not depend on any LLM. The following two capabilities run on local fallback paths when **no model is configured**:
+
+- **AI featured reasons**: rule scoring + local template reasons.
+- **Chinese summaries**: keyword profiles + the original English description.
+
+Once an OpenAI-compatible model is configured, English descriptions that miss the local profiles are sent to the model for a factual Chinese summary, and AI featured reasons switch to model output. **If the model is unavailable, the request fails, or the response contains no Chinese, Repo Scout automatically falls back to the local path — the main flow is never broken**.
+
+Create `.env.local` at the project root (already ignored by `.gitignore`):
+
+```dotenv
+REPO_SCOUT_OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+REPO_SCOUT_OPENAI_API_KEY=your-api-key
+REPO_SCOUT_OPENAI_MODEL=glm-4.7
+```
+
+All three variables must be set together to enable the model; if any is missing, the local fallback stays in effect. `scripts/local-demo.sh` sources this file automatically; when running commands manually, `set -a; source .env.local; set +a` first, or export the variables yourself.
+
+Any OpenAI-compatible `chat/completions` endpoint works (e.g. Zhipu GLM, OpenAI, DeepSeek, Moonshot). **Never commit a real API key** — `.env.local` is already ignored; do not rename it or copy it elsewhere.
+
+Once the model is enabled, you can backfill Chinese summaries for existing repositories in one pass:
+
+```bash
+npm run backfill:content
+```

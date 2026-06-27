@@ -69,15 +69,7 @@ scripts/local-demo.sh --real --period weekly --language Python --limit 20
 scripts/local-demo.sh --sample
 ```
 
-演示脚本会自动加载项目根目录的 `.env.local`，该文件已被 Git 忽略。需要为英文简介摘要和 AI 精选理由启用 GLM 时，可以写入：
-
-```dotenv
-REPO_SCOUT_OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4
-REPO_SCOUT_OPENAI_API_KEY=your-api-key
-REPO_SCOUT_OPENAI_MODEL=glm-4.7
-```
-
-GLM 同时用于生成未命中本地规则的英文简介摘要与 AI 精选理由。不配置模型或调用失败时，会分别回退到原简介或本地模板理由。不要把真实 API Key 提交到仓库。
+> Repo Scout **无需任何大模型配置即可完整运行**。AI 精选和中文摘要默认走确定性规则评分与本地模板，配置大模型只是可选增强，详见[可选：启用大模型增强](#可选启用大模型增强)。
 
 演示脚本会写入本地 SQLite 数据、生成 AI 精选专题，并启动：
 
@@ -90,6 +82,7 @@ GLM 同时用于生成未命中本地规则的英文简介摘要与 AI 精选理
 npm run ingest:trending -- --period daily --limit 20
 npm run ingest:trending -- --period weekly --language Python --limit 20
 npm run curate:featured -- --limit 5
+npm run backfill:content   # 重新生成已有仓库的中文摘要（可选）
 npm run dev:api
 npm run dev:web
 ```
@@ -106,4 +99,31 @@ scripts/validate-local-release.sh
 scripts/validate-runtime.sh
 ```
 
-后端默认使用本地 SQLite 数据库，文件会写入 `data/` 目录，该目录已被 `.gitignore` 忽略。AI 精选默认使用规则评分和本地模板理由。
+后端默认使用本地 SQLite 数据库，文件会写入 `data/` 目录，该目录已被 `.gitignore` 忽略。
+
+## 可选：启用大模型增强
+
+Repo Scout 完整功能不依赖任何大模型。下列两项能力在**未配置模型时**走本地降级路径：
+
+- **AI 精选理由**：默认走规则评分 + 本地模板理由。
+- **中文摘要**：默认走关键词 profile + 原英文简介。
+
+配置 OpenAI-compatible 模型后，未命中本地规则的英文简介会调用模型生成事实性中文摘要，AI 精选理由也会改用模型输出。**模型不可用、请求失败或返回不含中文时，自动回退到本地降级，不影响主流程**。
+
+在项目根目录创建 `.env.local`（已被 `.gitignore` 忽略）：
+
+```dotenv
+REPO_SCOUT_OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+REPO_SCOUT_OPENAI_API_KEY=your-api-key
+REPO_SCOUT_OPENAI_MODEL=glm-4.7
+```
+
+三个变量必须同时配置才会启用，任一缺失即保持本地降级。`scripts/local-demo.sh` 会自动 `source` 此文件；手动运行命令时请先 `set -a; source .env.local; set +a` 或自行 export。
+
+支持任意 OpenAI-compatible `chat/completions` 端点（如智谱 GLM、OpenAI、DeepSeek、Moonshot 等）。**不要把真实 API Key 提交到仓库**——`.env.local` 已被忽略，请勿改文件名或复制到其他路径。
+
+启用模型后可一次性回填已有仓库的中文摘要：
+
+```bash
+npm run backfill:content
+```

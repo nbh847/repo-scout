@@ -86,6 +86,7 @@
 - 修正首页项目卡片指标：榜单排名和 Stars 排序显示总 Stars，新增 Stars 排序显示周期新增量。
 - 修复同一仓库进入多个精选专题时首页右侧卡片 React key 重复报错。
 - 首页练手项目卡片支持每页 6 条翻页，保留关键词、周期、语言和排序上下文，并按周期读取最多 20/30/50 条榜单数据。
+- 项目详情页和首页 GitHub 外链按钮改为在新标签页打开。
 
 ## 进行中
 
@@ -235,3 +236,4 @@
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和三个排序页面输出检查，验证卡片 Stars 指标随排序模式正确切换。
 - 2026-06-27：已确认精选接口存在合法的跨专题重复仓库，并通过 `npm run test:web`、`npm run lint:web` 和 `npm --workspace apps/web run typecheck` 验证精选卡片复合 key 修复。
 - 2026-06-27：已通过 `npm run test:web`、`npm run lint:web`、`npm --workspace apps/web run typecheck` 和本地第 1/2 页、排序分页组合页面检查，验证首页项目翻页和详情返回上下文。
+- 2026-06-27：已通过前端测试、lint、typecheck 和运行页面外链属性检查，验证 GitHub 按钮新标签页打开。

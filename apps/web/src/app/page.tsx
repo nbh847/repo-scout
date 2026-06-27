@@ -535,6 +535,8 @@ export default async function Home({ searchParams }: HomeProps) {
               </div>
               <a
                 href="https://github.com/trending"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="mt-4 flex h-11 items-center justify-between rounded-lg border border-line bg-[#10213d] px-4 text-sm font-bold text-ink"
               >
                 Open GitHub Trending

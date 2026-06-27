@@ -253,6 +253,8 @@ export default async function RepositoryDetailPage({ params, searchParams }: Rep
             </div>
             <a
               href={repository.url}
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-7 flex h-11 items-center justify-between rounded-lg bg-orange-500 px-4 text-sm font-black text-white"
             >
               打开 GitHub

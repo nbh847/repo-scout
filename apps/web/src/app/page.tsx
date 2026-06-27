@@ -1,5 +1,7 @@
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   Flame,
   Radar,
@@ -10,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { RankingSortControl } from "./ranking-sort-control";
+import { ingestionLimitForPeriod } from "./trending-ingestion-config";
 import { type TrendingRun, TrendingIngestionPanel } from "./trending-ingestion-panel";
 import {
   type ApiRepository,
@@ -21,6 +24,7 @@ import {
   buildRepositoryHref,
   buildMetrics,
   buildRepositoryViewModel,
+  paginateRepositories,
   repositoryMetricForSort,
   type RepositorySortMode,
   type RepositoryViewModel,
@@ -34,6 +38,7 @@ type SearchParams = {
   period?: string | string[];
   language?: string | string[];
   sort?: string | string[];
+  page?: string | string[];
 };
 
 type HomeProps = {
@@ -107,11 +112,22 @@ function readSort(searchParams?: SearchParams): RepositorySortMode {
   return sortFilters.some((filter) => filter.value === sort) ? (sort as RepositorySortMode) : "ranking";
 }
 
+function readPage(searchParams?: SearchParams): number {
+  const page = readSingleParam(searchParams?.page);
+  return /^\d+$/.test(page) ? Math.max(1, Number(page)) : 1;
+}
+
 function buildHomeFilterHref(period: string, language: string, sort: RepositorySortMode): string {
   return buildHomeReturnHref("", period, language, sort);
 }
 
-function buildHomeReturnHref(query: string, period: string, language: string, sort: RepositorySortMode): string {
+function buildHomeReturnHref(
+  query: string,
+  period: string,
+  language: string,
+  sort: RepositorySortMode,
+  page = 1,
+): string {
   const params = new URLSearchParams();
   if (query) {
     params.set("q", query);
@@ -124,6 +140,9 @@ function buildHomeReturnHref(query: string, period: string, language: string, so
   }
   if (sort !== "ranking") {
     params.set("sort", sort);
+  }
+  if (page > 1) {
+    params.set("page", String(page));
   }
   const queryString = params.toString();
   return queryString ? `/?${queryString}#ranking` : "/#ranking";
@@ -150,19 +169,23 @@ export default async function Home({ searchParams }: HomeProps) {
   const languageFilters = languageResult.data?.length ? languageResult.data : fallbackLanguageFilters;
   const language = readLanguage(params, languageFilters);
   const sort = readSort(params);
+  const requestedPage = readPage(params);
+  const repositoryLimit = query ? 50 : ingestionLimitForPeriod(period);
   const [repositoryResult, featuredResult, trendingRunResult] = await Promise.all([
-    fetchApi<ApiRepository[]>(buildRepositoryApiPath({ query, period, language })),
+    fetchApi<ApiRepository[]>(buildRepositoryApiPath({ query, period, language, limit: repositoryLimit })),
     fetchApi<ApiFeaturedCollection[]>("/api/featured"),
     fetchApi<TrendingRun>("/api/repositories/trending/status"),
   ]);
   const repositories: RepositoryViewModel[] = sortRepositories(repositoryResult.data ?? [], sort).map((repository, index) =>
     buildRepositoryViewModel(repository, index),
   );
-  const returnHref = buildHomeReturnHref(query, period, language, sort);
+  const pagination = paginateRepositories(repositories, requestedPage, 6);
+  const returnHref = buildHomeReturnHref(query, period, language, sort, pagination.page);
   const featuredProjects = buildFeaturedProjects(featuredResult.data);
   const metrics = buildMetrics(repositories);
   const dataError = repositoryResult.error ?? featuredResult.error;
-  const primaryRepositories = repositories.slice(0, 6);
+  const primaryRepositories = pagination.items;
+  const pageNumbers = Array.from({ length: pagination.totalPages }, (_, index) => index + 1);
   const starRepositories = repositories.slice(0, 4);
   const sidebarProjects =
     featuredProjects.length > 0
@@ -315,7 +338,9 @@ export default async function Home({ searchParams }: HomeProps) {
                   <h2 className="mt-1 text-xl font-black text-ink sm:text-2xl">适合拆解和练手的项目卡片</h2>
                 </div>
                 <span className="hidden rounded-full border border-[#244169] bg-[#10213d] px-4 py-2 text-sm font-bold text-muted md:inline-flex">
-                  {primaryRepositories.length} repos
+                  {pagination.totalItems === 0
+                    ? "0 repos"
+                    : `${(pagination.page - 1) * 6 + 1}-${Math.min(pagination.page * 6, pagination.totalItems)} / ${pagination.totalItems}`}
                 </span>
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -393,6 +418,50 @@ export default async function Home({ searchParams }: HomeProps) {
                 );
               })}
               </div>
+              {pagination.totalPages > 1 ? (
+                <nav className="mt-6 flex items-center justify-center gap-1.5" aria-label="项目翻页">
+                  {pagination.page > 1 ? (
+                    <Link
+                      href={buildHomeReturnHref(query, period, language, sort, pagination.page - 1)}
+                      className="grid h-10 w-10 place-items-center rounded-md border border-[#244169] bg-[#10213d] text-muted hover:border-cyan/50 hover:text-ink"
+                      aria-label="上一页"
+                    >
+                      <ChevronLeft size={18} aria-hidden="true" />
+                    </Link>
+                  ) : (
+                    <span className="grid h-10 w-10 place-items-center text-[#2a3e5f]" aria-hidden="true">
+                      <ChevronLeft size={18} />
+                    </span>
+                  )}
+                  {pageNumbers.map((pageNumber) => (
+                    <Link
+                      key={pageNumber}
+                      href={buildHomeReturnHref(query, period, language, sort, pageNumber)}
+                      aria-current={pagination.page === pageNumber ? "page" : undefined}
+                      className={`grid h-10 min-w-10 place-items-center rounded-md px-2 text-sm font-black ${
+                        pagination.page === pageNumber
+                          ? "bg-cyan text-[#071321]"
+                          : "border border-[#244169] bg-[#10213d] text-muted hover:border-cyan/50 hover:text-ink"
+                      }`}
+                    >
+                      {pageNumber}
+                    </Link>
+                  ))}
+                  {pagination.page < pagination.totalPages ? (
+                    <Link
+                      href={buildHomeReturnHref(query, period, language, sort, pagination.page + 1)}
+                      className="grid h-10 w-10 place-items-center rounded-md border border-[#244169] bg-[#10213d] text-muted hover:border-cyan/50 hover:text-ink"
+                      aria-label="下一页"
+                    >
+                      <ChevronRight size={18} aria-hidden="true" />
+                    </Link>
+                  ) : (
+                    <span className="grid h-10 w-10 place-items-center text-[#2a3e5f]" aria-hidden="true">
+                      <ChevronRight size={18} />
+                    </span>
+                  )}
+                </nav>
+              ) : null}
             </div>
           </div>
 

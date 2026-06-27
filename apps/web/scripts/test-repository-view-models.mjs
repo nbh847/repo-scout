@@ -48,6 +48,7 @@ const {
   buildRepositoryViewModel,
   buildMetrics,
   formatTrendDelta,
+  paginateRepositories,
   repositoryMetricForSort,
   sortRepositories,
 } = sandbox.module.exports;
@@ -233,6 +234,10 @@ assert.equal(
   buildRepositoryApiPath({ query: "agent", period: "monthly", language: "Go" }),
   "/api/repositories/search?q=agent&limit=20&language=Go",
 );
+assert.equal(
+  buildRepositoryApiPath({ query: "", period: "monthly", language: "", limit: 50 }),
+  "/api/repositories/trending?limit=50&period=monthly",
+);
 assert.equal(buildRepositoryLanguagesApiPath(), "/api/repositories/languages");
 assert.equal(formatTrendDelta(55), "+55");
 assert.equal(formatTrendDelta(0), "0");
@@ -269,8 +274,20 @@ assert.deepEqual(normalize(repositoryMetricForSort(repository, "gained")), {
   label: "新增 Stars",
   value: "+640",
 });
+assert.deepEqual(
+  normalize(paginateRepositories(sortableRepositories, 2, 2)),
+  {
+    items: [sortableRepositories[2]],
+    page: 2,
+    totalPages: 2,
+    totalItems: 3,
+  },
+);
+assert.equal(paginateRepositories(sortableRepositories, 99, 2).page, 2);
 assert.match(homePageSource, /repository\.tags\.map/);
 assert.match(homePageSource, /repository\.summary/);
+assert.match(homePageSource, /paginateRepositories/);
+assert.match(homePageSource, /pageNumbers/);
 assert.match(homePageSource, /key=\{`\$\{project\.collectionSlug\}:\$\{project\.repo\}`\}/);
 assert.doesNotMatch(homePageSource, /key=\{project\.repo\}/);
 assert.match(homePageSource, /sortRepositories/);

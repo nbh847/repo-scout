@@ -68,6 +68,7 @@ export type RepositoryApiPathOptions = {
   query: string;
   period: string;
   language: string;
+  limit?: number;
 };
 
 export type RepositorySortMode = "ranking" | "stars" | "gained";
@@ -78,10 +79,11 @@ export function buildRepositoryLanguagesApiPath(): string {
 
 export function buildRepositoryApiPath(options: RepositoryApiPathOptions): string {
   const query = options.query.trim();
+  const limit = options.limit ?? 20;
   if (query) {
     const params = new URLSearchParams();
     params.set("q", query);
-    params.set("limit", "20");
+    params.set("limit", String(limit));
     if (options.language) {
       params.set("language", options.language);
     }
@@ -89,7 +91,7 @@ export function buildRepositoryApiPath(options: RepositoryApiPathOptions): strin
   }
 
   const params = new URLSearchParams();
-  params.set("limit", "20");
+  params.set("limit", String(limit));
   if (options.period) {
     params.set("period", options.period);
   }
@@ -189,6 +191,23 @@ export function repositoryMetricForSort(
     return { label: "新增 Stars", value: repository.gained };
   }
   return { label: "Stars", value: repository.stars };
+}
+
+export function paginateRepositories<T>(
+  items: T[],
+  requestedPage: number,
+  pageSize: number,
+): { items: T[]; page: number; totalPages: number; totalItems: number } {
+  const totalItems = items.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const page = Math.min(Math.max(1, requestedPage), totalPages);
+  const start = (page - 1) * pageSize;
+  return {
+    items: items.slice(start, start + pageSize),
+    page,
+    totalPages,
+    totalItems,
+  };
 }
 
 export function buildMetrics(repositories: RepositoryViewModel[]): MetricViewModel[] {

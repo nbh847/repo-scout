@@ -193,6 +193,7 @@ export default async function Home({ searchParams }: HomeProps) {
         : starRepositories.map((repository) => ({
             title: "GitHub Trending",
             collectionSlug: "",
+            collectionSize: 0,
             repo: repository.fullName,
             reason: repository.description,
             score: repository.gained,
@@ -514,6 +515,15 @@ export default async function Home({ searchParams }: HomeProps) {
                     查看
                     <ArrowRight size={16} aria-hidden="true" />
                   </Link>
+                  {project.collectionSlug ? (
+                    <Link
+                      href={buildCollectionHref(project.collectionSlug)}
+                      className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-cyan hover:text-ink"
+                    >
+                      查看全部 {project.collectionSize} 个项目
+                      <ArrowRight size={15} aria-hidden="true" />
+                    </Link>
+                  ) : null}
                 </article>
               ))}
             </div>

@@ -292,6 +292,8 @@ assert.match(homePageSource, /paginateRepositories/);
 assert.match(homePageSource, /pageNumbers/);
 assert.match(homePageSource, /href="https:\/\/github\.com\/trending"[\s\S]*target="_blank"/);
 assert.match(homePageSource, /key=\{`\$\{project\.collectionSlug\}:\$\{project\.repo\}`\}/);
+assert.match(homePageSource, /查看全部 \{project\.collectionSize\} 个项目/);
+assert.match(homePageSource, /href=\{buildCollectionHref\(project\.collectionSlug\)\}/);
 assert.doesNotMatch(homePageSource, /key=\{project\.repo\}/);
 assert.match(homePageSource, /sortRepositories/);
 assert.match(homePageSource, /RankingSortControl/);

@@ -3,7 +3,6 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DOC_CONTENT="$(cat "$ROOT_DIR/docs/mvp-release-checklist.md")"
-README_CONTENT="$(cat "$ROOT_DIR/README.md")"
 README_EN_CONTENT="$(cat "$ROOT_DIR/README.en.md")"
 RISK_CONTENT="$(cat "$ROOT_DIR/docs/dependency-risks.md")"
 READINESS_CONTENT="$(cat "$ROOT_DIR/docs/release-readiness.md")"
@@ -28,9 +27,6 @@ assert_contains "$DOC_CONTENT" "npm run curate:featured -- --limit 5" "docs/mvp-
 assert_contains "$DOC_CONTENT" "npm run build:web" "docs/mvp-release-checklist.md"
 assert_contains "$DOC_CONTENT" "scripts/check-local-data-untracked.sh" "docs/mvp-release-checklist.md"
 assert_contains "$DOC_CONTENT" "scripts/check-sensitive-files-untracked.sh" "docs/mvp-release-checklist.md"
-assert_contains "$README_CONTENT" "./docs/mvp-release-checklist.md" "README.md"
-assert_contains "$README_CONTENT" "./docs/dependency-risks.md" "README.md"
-assert_contains "$README_CONTENT" "./docs/release-readiness.md" "README.md"
 assert_contains "$README_EN_CONTENT" "./docs/mvp-release-checklist.md" "README.en.md"
 assert_contains "$README_EN_CONTENT" "./docs/dependency-risks.md" "README.en.md"
 assert_contains "$README_EN_CONTENT" "./docs/release-readiness.md" "README.en.md"

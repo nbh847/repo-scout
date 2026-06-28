@@ -103,7 +103,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
                 className="flex min-h-[300px] flex-col rounded-lg border border-[#254a76] bg-[#172b50]/90 p-5 shadow-terminal"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-mono text-sm font-black text-orange-400">#{String(item.rank).padStart(2, "0")}</p>
                     <h2 className="mt-2 break-words text-xl font-black text-ink">{repository.fullName}</h2>
                   </div>

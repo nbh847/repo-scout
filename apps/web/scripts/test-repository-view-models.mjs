@@ -145,6 +145,14 @@ assert.deepEqual(
         title: "LLM 工具",
         repositories: [
           {
+            ...repository,
+            full_name: "openai/agents",
+            stars: 15420,
+            reason: "Overlapping top pick.",
+            beginner_score: 4,
+            learning_value_score: 5,
+          },
+          {
             ...fallbackRepository,
             full_name: "example/llm-tool",
             stars: 0,
@@ -169,7 +177,7 @@ assert.deepEqual(
     {
       title: "LLM 工具",
       collectionSlug: "llm-tools",
-      collectionSize: 1,
+      collectionSize: 2,
       repo: "example/llm-tool",
       reason: "LLM tool pick.",
       score: "3.5",

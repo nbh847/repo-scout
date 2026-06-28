@@ -98,6 +98,7 @@
 - 在 README 中增加 Repo Scout 项目预览图。
 - 完成首页精选专题数量入口设计，明确通过“查看全部 N 个项目”链接展示专题规模并进入专题页。
 - 首页每个 AI 精选专题的 Top pick 下方展示“查看全部 N 个项目”入口，明确专题项目数量并链接到专题页。
+- 首页不同 AI 精选专题优先展示未出现过的最高排名项目，避免右侧明星项目卡片重复。
 
 ## 进行中
 
@@ -254,3 +255,4 @@
 - 2026-06-27：已通过配置 `.env.local`、运行 `npm run backfill:content` 和 `npm run curate:featured -- --limit 5`，验证 GLM-4.7 为未匹配英文简介生成事实性中文摘要（如 `apple/container` → "这是一个在 Mac 上使用轻量级虚拟机创建和运行 Linux 容器的工具，使用 Swift 编写并针对 Apple silicon 进行了优化。"），50 条仓库全部回填，`summary_zh` 占位条目数从 16 降为 0；本地 API `GET /health`、`GET /api/featured`、`GET /api/repositories/apple/container` 与 Web `http://127.0.0.1:3000` 返回 200。
 - 2026-06-27：已通过 46 项后端测试（含新增 GLM 优先于 profile 命中的两条测试），验证配置模型时所有英文简介都先调用 GLM 生成具体摘要，GLM 失败再回退 profile 文本或原文。
 - 2026-06-28：已通过使用现有项目虚拟环境的临时运行态验收，验证首页每个 AI 精选专题的项目数量入口与专题页链接。
+- 2026-06-28：已通过前端测试、lint、typecheck、生产构建和运行态验收，验证跨专题 Top pick 去重展示。

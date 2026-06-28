@@ -225,11 +225,15 @@ export function buildFeaturedProjects(collections: ApiFeaturedCollection[] | nul
     return [];
   }
 
+  const displayedRepositories = new Set<string>();
   return collections.flatMap((collection) => {
-    const repository = collection.repositories[0];
+    const repository = collection.repositories.find(
+      (candidate) => !displayedRepositories.has(candidate.full_name),
+    );
     if (!repository) {
       return [];
     }
+    displayedRepositories.add(repository.full_name);
 
     return [
       {

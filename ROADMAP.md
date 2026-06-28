@@ -95,6 +95,7 @@
 - 增加中文内容回填命令 `npm run backfill:content`，支持幂等迁移和全量重写已有仓库的中文字段。
 - 本地演示脚本支持自动加载根目录 `.env.local`（已 gitignore），用于注入 GLM/OpenAI 配置而不泄露密钥。
 - 删除 README 中已经完成的“计划功能”“当前状态”和“文档”章节，并同步移除文档自检中的过时链接断言。
+- 在 README 中增加 Repo Scout 项目预览图。
 
 ## 进行中
 

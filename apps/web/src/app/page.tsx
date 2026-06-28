@@ -508,22 +508,24 @@ export default async function Home({ searchParams }: HomeProps) {
                       {project.collectionSlug ? `AI 评分 ${project.score}` : `增长 ${project.score}`}
                     </span>
                   </div>
-                  <Link
-                    href={buildRepositoryHref(project.repo, returnHref)}
-                    className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-orange-500 px-4 text-sm font-black text-white"
-                  >
-                    查看
-                    <ArrowRight size={16} aria-hidden="true" />
-                  </Link>
-                  {project.collectionSlug ? (
+                  <div className="flex flex-col items-start">
                     <Link
-                      href={buildCollectionHref(project.collectionSlug)}
-                      className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-cyan hover:text-ink"
+                      href={buildRepositoryHref(project.repo, returnHref)}
+                      className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-orange-500 px-4 text-sm font-black text-white"
                     >
-                      查看全部 {project.collectionSize} 个项目
-                      <ArrowRight size={15} aria-hidden="true" />
+                      查看
+                      <ArrowRight size={16} aria-hidden="true" />
                     </Link>
-                  ) : null}
+                    {project.collectionSlug ? (
+                      <Link
+                        href={buildCollectionHref(project.collectionSlug)}
+                        className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-cyan hover:text-ink"
+                      >
+                        查看全部 {project.collectionSize} 个项目
+                        <ArrowRight size={15} aria-hidden="true" />
+                      </Link>
+                    ) : null}
+                  </div>
                 </article>
               ))}
             </div>

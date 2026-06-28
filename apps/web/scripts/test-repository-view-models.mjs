@@ -160,6 +160,7 @@ assert.deepEqual(
     {
       title: "AI Agent 项目",
       collectionSlug: "ai-agent-projects",
+      collectionSize: 2,
       repo: "openai/agents",
       reason: "Agent workflow pick.",
       score: "4.5",
@@ -168,6 +169,7 @@ assert.deepEqual(
     {
       title: "LLM 工具",
       collectionSlug: "llm-tools",
+      collectionSize: 1,
       repo: "example/llm-tool",
       reason: "LLM tool pick.",
       score: "3.5",

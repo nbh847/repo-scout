@@ -47,6 +47,7 @@ export type ApiFeaturedCollection = {
 export type FeaturedProjectViewModel = {
   title: string;
   collectionSlug: string;
+  collectionSize: number;
   repo: string;
   reason: string;
   score: string;
@@ -234,6 +235,7 @@ export function buildFeaturedProjects(collections: ApiFeaturedCollection[] | nul
       {
         title: collection.title,
         collectionSlug: collection.slug,
+        collectionSize: collection.repositories.length,
         repo: repository.full_name,
         reason: repository.reason,
         score: ((repository.beginner_score + repository.learning_value_score) / 2).toFixed(1),
